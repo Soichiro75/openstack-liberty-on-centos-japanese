@@ -27,7 +27,7 @@
 
 ## 環境
 
-### 今回使用したVMリソース割り当て
+### 使用機器(or VM)について
 
 - 操作PC:
 
@@ -36,7 +36,7 @@
 |Application|Chrome, Tera_Term, </br>vSphere_Client(OpenStackをESXi上に構築するため)|
 
 
-- 初期構築用:
+- 初期構築用 VM:
 
 |   |controller01|compute01|cli01|
 |---|---|---|---|
@@ -46,7 +46,7 @@
 |Nic|2 nics|2 nics|1 nic|
 
 
-- スケールアウト用:
+- スケールアウト用 VM:
 
 |   |compute02|compute03|
 |---|---|---|
