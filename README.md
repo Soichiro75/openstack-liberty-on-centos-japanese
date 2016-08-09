@@ -72,4 +72,7 @@
 
 ### 構成図
 
-<img src="https://github.com/Soichiro75/openstack-mitaka-1controller-1compute-1cli-on-ubuntu-japanese/blob/master/images/xxxxxxxxx.png" width="320px" title="OpenStack全体構成図">
+<!-- <img src="https://github.com/Soichiro75/openstack-liberty-on-centos-japanese/blob/master/images/OpenStack構成図_超下書き.png" width="320px" title="OpenStack全体構成図">
+-->
+
+![OpenStack全体構成図 (超下書き)](https://github.com/Soichiro75/openstack-liberty-on-centos-japanese/blob/master/images/OpenStack構成図_超下書き.png)
