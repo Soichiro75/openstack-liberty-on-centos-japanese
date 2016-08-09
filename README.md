@@ -70,7 +70,7 @@
 |Nic|1 nic|1 nic| - |
 
 
-### 構成図
+### (仮)構成図 (後できちんと描き直す)
 
 <!-- <img src="https://github.com/Soichiro75/openstack-liberty-on-centos-japanese/blob/master/images/OpenStack構成図_超下書き.png" width="320px" title="OpenStack全体構成図">
 -->
