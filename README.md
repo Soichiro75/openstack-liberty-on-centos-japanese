@@ -58,7 +58,7 @@
 
 ### (参考)最小構成
 
-[OpenStack ドキュメント 環境 について](http://docs.openstack.org/mitaka/ja/install-guide-ubuntu/environment.html)
+[OpenStack ドキュメント 環境 について](http://docs.openstack.org/liberty/ja/install-guide-rdo/environment.html)
 
 コアなサービスと CirrOS のインスタンスをいくつか動かす程度の検証環境(PoC)であれば、以下の最小要件で動作する
 
