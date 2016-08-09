@@ -57,7 +57,7 @@
 
 
 |   |controller01用 VM|compute01用 VM|備考|
-|---|---|---|
+|---|---|---|---|
 |構成|標準|標準|-|
 |名前|controller01|compute01|-|
 |ストレージ|datastore1|datastore1|-|
