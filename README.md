@@ -7,13 +7,15 @@
 注意書き：
 - PoC環境なので、切り戻し等やり易い様にESXi上でOpenStackを構築する
 
+- 各サーバー(OpenStackの各コンポーネント、今回はVM)がインターネットに繋がる環境であること
+
 - 基本的にセキュリティは考慮しない
 
 - 基本的にrootユーザーにて設定する
 
 - パスワードは基本的に`Password123$`を使用する
+  - [OpenStackで使用するパスワードについて](http://docs.openstack.org/liberty/ja/install-guide-rdo/environment-security.html)
 
-- 各サーバー(OpenStackの各コンポーネント、今回はVM)がインターネットに繋がる環境であること
 
 
 
