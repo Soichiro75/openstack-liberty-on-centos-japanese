@@ -24,7 +24,7 @@
 - [OpenStack Docs Liberty Installation Guide for CentOS 7 ](http://docs.openstack.org/liberty/ja/install-guide-rdo/)
 - [OpenStack構築手順書Liberty版 for Ubuntu(日本仮想化技術株式会社)](http://www.slideshare.net/VirtualTech-JP/openstackmitaka)
 - [RDO Documentation](https://www.rdoproject.org/documentation/)
-
+- [Documentation for Red Hat OpenStack Platform](https://access.redhat.com/documentation/ja/red-hat-openstack-platform?version=7/)
 
 
 ## 環境
