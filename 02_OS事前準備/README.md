@@ -12,7 +12,7 @@
 
 
 - CentOS7 イメージの準備
-  - ESXiに接続し、OSイメージをアップロード
+  - vClientでESXiに接続し、OSイメージをアップロード
 
 <img src="https://github.com/Soichiro75/openstack-liberty-on-centos-japanese/blob/master/02_OS事前準備/images/2016-08-09_010_OSアップロードtoESXi.png" width="320px" title="OSアップロードtoESXi.png">
 
@@ -21,6 +21,11 @@
 
 - 仮想マシン新規インストール
 
+  - 以下を参考に controller01 と compute01 用のCentOS7をインストール
+    - OpenStack用のVMとなるため、以下の表に記載の通り`Intel VT-x/AMD-Vを命令セット仮想化に使用し、ソフトウェアをMMU仮想化に使用`も有効にする必要がある
+    - 補足:
+      - [Intel VT](https://ja.wikipedia.org/wiki/インテル_バーチャライゼーション・テクノロジー)とは、仮想マシンモニタによる複数のOSの並行動作をより効率的に行うための支援技術
+      - [MMU(Memory Management Unit)](https://ja.wikipedia.org/wiki/メモリ管理ユニット)とは、コンピュータのハードウェア部品のひとつであり、CPUの要求するメモリアクセスを処理する
 
 |   |controller01用 VM|compute01用 VM|備考|
 |---|---|---|---|
@@ -46,110 +51,54 @@
 |CPU/MMU 仮想化|VT-xを使用~</br>ソフトウェアをMMU仮想化に使用|VT-xを使用~</br>ソフトウェアをMMU仮想化に使用|-|
 
 
-
+- 以下を参考にCentOS7 をインストール
 
 
 - controller01, compute01, cli01 とするサーバーに最小構成でインストールする
   - インストール時のパラメーター
     - Ubuntuインストール時に使用した言語がインストール後にも使用される。日本語環境では何かと問題が起きるので、英語環境とするために英語インストールを推奨
   - Block Storage のようなオプションサービスをインストールする場合には Logical Volume Manager (LVM) 推奨
-  - ディスクに既に別のデータが入っている場合、パーティション選択時に内容を削除すること
-  - 以下xxxについて、
-
-|設定項目|設定例|
-|---|---|
-|Language|English|
-|-|Install Ubuntu Server|
-|Language|English|
-|Location|other > Asia > Japan|
-|Locales|United States - en_US.UTF-8|
-|Keyboard (Detect keyboard layout?)|No|
-|Keyboard|Japanese / Japanese|
-|(DHCPが環境にない場合)|manual configuration|
-|(DHCPが環境にない場合)nic|xxxxxxxx|
-|(DHCPが環境にない場合)IP|192.168.101.x/24|
-|(DHCPが環境にない場合)Gateway|192.168.101.254|
-|(DHCPが環境にない場合)DNS|8.8.8.8|
-|Hostname|xxx.st.local|
-|New user|user01|
-|UserName for your account|user01|
-|Password|Password123$|
-|Encrypt your home directory|No|
-|Asia/Tokyo Is this time zone correct?|Yes|
-|Partitioning method|Guided - use entire disk and set up LVM|
-|Disk|SCSI3 (0,0,0) (sda) - xxxGB|
-|Write the changes to disks and configuration LVM?|Yes|
-|Amount of volume group|max|
-|Write the changes to disk?|Yes|
-|Proxy|(空)|
-|Manage upgrades|No automatic updates|
-|Software|OpenSSH server|
-|Install GRUB boot loader?|Yes|
-|(Diskが複数ある場合)Chose xxx?|sda|
-|Installation Complete. Restart?|Continue|
 
 
+|   |controller01用 VM|compute01用 VM|備考|
+|---|---|---|---|
+|Language ~ install process||||
+|KEYBOAD|JAPANESE|JAPANESE|ENGLISH(US)は削除|
+|DATE & TIME ZONE|Asia/Tokyo 現在日時を入力|Asia/Tokyo 現在日時を入力|Network Time は OFF のまま|
+|LANGUAGE SUPPORT|ENGLISH(United States)|ENGLISH(United States)|デフォルト|
+|SOFTWARE SELECTION|Minimal|Minimal Install|デフォルト|
+|INSTALLATION DESTINATION|sda 200GB|sda 200GB||
+|NETWORK 若番(VM Network 101)|-|-|設定画面に進むために`configure`押下|
+|NETWORK 若番 Connection name|eth0|eth0|Connection nameはデフォルトの`enoxxxxxxxx` だと分かりにくいので`ethx`に書き換え|
+|NETWORK 若番 IPv4 Method|Manual|Manual||
+|NETWORK 若番 Address(IP/Netmask/DGW)|192.168.101.11 255.255.255.0 192.168.101.254|192.168.101.21 255.255.255.0 192.168.101.254||
+|NETWORK 若番 DNS|8.8.8.8|8.8.8.8||
+|NETWORK 若番 IPv6 Method|Ignore|Ignore|OpenStackでたぶん使わないと思う。。。。後で確認。|
+|NETWORK 若番 General|Automatically connect~ にチェック|Automatically connect~ にチェック||
+|NETWORK 老番(VM Network 102)|-|-|設定画面に進むために`configure`押下|
+|NETWORK 老番 Connection name|eth1|eth1|Connection nameはデフォルトの`enoxxxxxxxx` だと分かりにくいので`ethx`に書き換え|
+|NETWORK 老番 IPv6 Method|Ignore|Ignore|IPv4については設定しない(デフォルトのDHCPのまま)|
+|NETWORK 老番 General|Automatically connect~ にチェック|Automatically connect~ にチェック||
+|NETWORK 老番 ||||
+|NETWORK 老番 ||||
+|Host name|controller01|compute01||
+|Bigin Installation|-|-||
+|ROOT PASSWORD|Password123$|Password123$||
+|Installing が完了するまで 約5分 待機|-|-||
+|Reboot|-|-||
 
 
-  - ハイパーバイザー上(VM)で構築検証する場合は、以下を確認すること
-    - nestedの設定をしていること()
-    - ハイパーバイザーがプロバイダーネットワークインターフェースに MAC アドレスフィルタリングを無効化する方法を提供していること(デフォルトなら特にフィルタリングはしていない状態)
-    - OpenStackコンポーネントとして使用するVMの`Virtualization Technology(VT-x or AMD-V)` を有効にすること(後述)
-    - OpenStackコンポーネントとして使用するVMの接続ポートの設定を`NWポートグループをプロミスキャス（無差別）モード`に設定すること(後述)
+- (Option) vClientにて、controller01,compute01ともに、</br>
+設定の編集 > CD/DVDドライブ1 > データストアISOファイル パワーオン時に接続 のチェックを外す > クライアントデバイス にチェック</br>
+を実施しておく。</br>
+ESXiにて、OVFテンプレート作成、デプロイ時にエラーになるのを防ぐため。
 
 
-## ログイン設定
+## ログイン確認
 
-- ログイン
-[対象: controller01, compute01, cli01]
-
-```
-login: user01
-Password: Password123$ (← 入力時 表示されない)
-```
-
-
-- rootパスワード
-[対象: controller01, compute01, cli01]
-
-```
-$ sudo su -
-password for user01: Password123$
-
-# passwd
-Enter password: Password123$
-Retype password: Password123$
-
-# exit
-$ exit
-```
-
-
-- rootログイン確認
-[対象: controller01, compute01, cli01]
-
-```
-login: root
-Password: Password123$
-```
-
-
-- ssh root ログイン
-[対象: controller01, compute01, cli01]
-
-```
-# vi /etc/ssh/sshd_config
-========> vi ここから
-PermitRootLogin without-password
-  ↓
-PermitRootLogin yes
-========< vi ここまで
-
-# service ssh restart
-```
-
-- 以降teraterm等からの操作可能
-[対象: controller01, compute01, cli01]
+- ログイン確認
+  - 操作PC のTera term から controller01(192.168.101.11) と compute01(192.168.101.21) に SSHログイン</br>
+  ユーザー名/パスワード: root/Password123$
 
 
 ## ネットワーク設定

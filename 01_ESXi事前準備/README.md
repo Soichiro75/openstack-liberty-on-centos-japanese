@@ -92,5 +92,7 @@
 - 以下を参考に`VM Network 101`と`VM Network 102`両ポートグループに、`プロミスキャス(無差別)モード 承諾`(OpenStack上のVMと通信をとれるようにするため)を設定
 
   - 192.168.101.1 ホスト選択 > 構成 > ハードウェア/ネットワーク > vSwitch(0 or 1)/プロパティ > VM Network (101 or 102) 編集 > セキュリティ/無差別モード 承諾
+  - 補足:
+    - [プロミスキャスモード](https://ja.wikipedia.org/wiki/プロミスキャス・モード):プロミスキャス・モード (promiscuous mode)とは、コンピュータ・ネットワークのネットワークカードが持つ動作モードの一つである。「プロミスキャス」は「無差別の」という意味を持ち、自分宛のデータパケットでない信号も取り込んで処理をすることを示す。
 
 <img src="https://github.com/Soichiro75/openstack-liberty-on-centos-japanese/blob/master/01_ESXi事前準備/images/2016-08-09_020_プロミスキャス(無差別)モード.png" width="320px" title="プロミスキャス(無差別)モード">
