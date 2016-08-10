@@ -29,7 +29,7 @@
 |名前|controller01|compute01|-|
 |ストレージ|datastore1|datastore1|-|
 |ゲストOS|Linux|Linux|-|
-|バージョン|Red Hat Enterprise Linux 7 (64ビット)|Red Hat Enterprise Linux 7 (64ビット)|ESXi5.5以下の場合は、「そのLinux(64bit)」|
+|バージョン|Red Hat Enterprise Linux 7 (64ビット)|Red Hat Enterprise Linux 7 (64ビット)|ESXi5.5以下の場合は、「その他Linux(64bit)」|
 |Nic|2つ|2つ|-|
 |Nic 1|VM Network 101|VM Network 101|-|
 |Nic 2|VM Network 102|VM Network 102|-|

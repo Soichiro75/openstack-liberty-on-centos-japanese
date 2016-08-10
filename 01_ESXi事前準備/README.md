@@ -71,6 +71,8 @@
 
 ## OpenStack on ESXi のための設定
 
+### ネットワーク 作成
+
 - 操作PCからvClientでログイン
 
 - 必要であれば、datastoreの追加。今回はdatastore2を追加した。
@@ -81,8 +83,11 @@
 
   - 192.168.101.1 ホスト選択 > 構成 > ハードウェア/ネットワーク > ネットワークの追加 > タイプ:仮想マシン > 標準スイッチの作成: vmnic1 > ネットワークラベル: VM Network 102
 
+    - 上記`VM Network 102`を、vSwitch(と vmnic)を分けて作成しているが、vSwitch0に両ポートグループを作成しても構わない(と思う。 OpenStackのネットワークを詳しく理解した後に書き直すかも。)
+
 <img src="https://github.com/Soichiro75/openstack-liberty-on-centos-japanese/blob/master/01_ESXi事前準備/images/2016-08-09_010_2PortGroups.png" width="320px" title="2PortGroups">
 
+### Nested 設定
 
 - 以下を参考に`VM Network 101`と`VM Network 102`両ポートグループに、`プロミスキャス(無差別)モード 承諾`(OpenStack上のVMと通信をとれるようにするため)を設定
 
