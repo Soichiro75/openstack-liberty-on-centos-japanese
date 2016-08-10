@@ -14,4 +14,4 @@ http://docs.openstack.org/liberty/ja/install-guide-rdo/launch-instance-networks-
 
 https://access.redhat.com/documentation/ja-JP/Red_Hat_Enterprise_Linux_OpenStack_Platform/7/html/Networking_Guide/openstack_networking_diagram.html
 
-
+http://openstack-ja.github.io/openstack-manuals/openstack-ops/content/example_architecture.html

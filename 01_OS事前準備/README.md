@@ -1,13 +1,13 @@
 # 01_OS事前準備
 
-**OpenStack on Ubuntu on オンプレ のコピッたまま。OpenStack on CentOS on ESXi 用に書き換え中。**
+**自分のリポジトリOpenStack on Ubuntu on オンプレ のコピッたまま。OpenStack on CentOS on ESXi 用に書き換え中。**
 
 
 
 ## 事前確認
 
-  - ESXiホストのCPUが64bitであること
-  - ESXiからインターネットに接続可能な環境であること
+  - ESXiホストのCPUが`64bit`,`Virtualization Technology(VT-x or AMD-V)対応`であること
+  - ESXiからインターネットに接続可能なネットワーク環境であること
 
 
 

@@ -1,7 +1,11 @@
 # openstack-liberty-on-centos-japanese
 
+***この手順は作成中です***
+
 この手順では、
 [OpenStack Docs Liberty Installation Guide for CentOS 7 ](http://docs.openstack.org/liberty/ja/install-guide-rdo/) を参考に、1Controller, 1Compute, 1Cli の構成でOpenStackのPoC環境を構築する
+
+上記ディレクトリの各 README.md を順に行うことでPoC環境構築が出来るようになっている
 
 
 注意書き：
@@ -14,7 +18,7 @@
 - 基本的にrootユーザーにて設定する
 
 - パスワードは基本的に`Password123$`を使用する
-  - [OpenStackで使用するパスワードについて](http://docs.openstack.org/liberty/ja/install-guide-rdo/environment-security.html)
+  - [()参考資料)OpenStackで使用するパスワードについて](http://docs.openstack.org/liberty/ja/install-guide-rdo/environment-security.html)
 
 
 
