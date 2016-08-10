@@ -18,7 +18,7 @@
 - 基本的にrootユーザーにて設定する
 
 - パスワードは基本的に`Password123$`を使用する
-  - [()参考資料)OpenStackで使用するパスワードについて](http://docs.openstack.org/liberty/ja/install-guide-rdo/environment-security.html)
+  - [(参考資料)OpenStackで使用するパスワードについて](http://docs.openstack.org/liberty/ja/install-guide-rdo/environment-security.html)
 
 
 
