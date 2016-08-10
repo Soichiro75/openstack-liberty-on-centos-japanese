@@ -1,6 +1,6 @@
 # 01_ESXi事前準備
 
-
+OpenStack on ESXi とするための、ESXi事前準備をする
 
 ## 事前確認
 
