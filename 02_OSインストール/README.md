@@ -14,7 +14,7 @@ OpenStackの controller01 と compute01 用のVMとなるCentOS7 をインスト
 - CentOS7 イメージの準備
   - vClientでESXiに接続し、OSイメージをアップロード
 
-<img src="https://github.com/Soichiro75/openstack-liberty-on-centos-japanese/blob/master/02_OS事前準備/images/2016-08-09_010_OSアップロードtoESXi.png" width="320px" title="OSアップロードtoESXi.png">
+<img src="https://github.com/Soichiro75/openstack-liberty-on-centos-japanese/blob/master/02_OSインストール/images/2016-08-09_010_OSアップロードtoESXi.png" width="320px" title="OSアップロードtoESXi.png">
 
 
 ## OSインストール
@@ -52,7 +52,6 @@ OpenStackの controller01 と compute01 用のVMとなるCentOS7 をインスト
 
 
 - 以下を参考にCentOS7 をインストール
-  - インストール時のパラメーター
   - Block Storage のようなオプションサービスをインストールする場合(今回はcontroler01にインストール)には [Logical Volume Manager (LVM) 推奨](http://docs.openstack.org/liberty/ja/install-guide-rdo/environment.html)らしいが、デフォルトでLVMなので以下インストール時に特に指定はしていない
 
 
