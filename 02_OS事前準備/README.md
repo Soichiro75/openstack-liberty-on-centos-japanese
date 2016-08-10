@@ -6,16 +6,15 @@
 ## OS準備
 
 
-- CentOS 7 64bit のダウンロード
- [対象: 操作PC]
+- CentOS 7 64bit のダウンロード [対象: 操作PC]
 
-[理研からCentOS-7-x86_64-Minimal-1511.iso](http://ftp.riken.jp/Linux/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso) をダウンロード
+  - ブラウザにて、[理研からCentOS-7-x86_64-Minimal-1511.iso](http://ftp.riken.jp/Linux/centos/7/isos/x86_64/CentOS-7-x86_64-Minimal-1511.iso) をダウンロード
 
 
 - CentOS7 イメージの準備
   - ESXiに接続し、OSイメージをアップロード
 
-<img src="https://github.com/Soichiro75/openstack-liberty-on-centos-japanese/01_OS事前準備/blob/master/images/2016-08-09_010_OSアップロードtoESXi.png" width="320px" title="OSアップロードtoESXi.png">
+<img src="https://github.com/Soichiro75/openstack-liberty-on-centos-japanese/blob/master/02_OS事前準備/images/2016-08-09_010_OSアップロードtoESXi.png" width="320px" title="OSアップロードtoESXi.png">
 
 
 ## OSインストール
