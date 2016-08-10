@@ -4,75 +4,164 @@
 
 ネットワーク設定、DNS(今回はhosts)、NTP 等のOS周りの設定をする
 
-## ネットワーク設定
 
-- ログイン確認
+## Network周りの設定
+
+### ssh ログイン
+
+- ログイン
   - 操作PC のTera term から controller01(192.168.101.11) と compute01(192.168.101.21) に SSHログイン</br>
   ユーザー名/パスワード: root/Password123$
 
-- 優先nicの設定確認
-[対象: controller01, compute01, cli01]
+
+
+### NetworkManagerサービス の無効化 と Networkサービス の有効化
+
+  - NetworkManagerサービスの無効化
+
+  ```
+  # systemctl disable NetworkManager
+  # systemctl stop NetworkManager
+  ```
+
+  - Networkサービス の有効化
+  ```
+  # systemctl enable network
+  # chkconfig --list
+  # systemctl start network
+  ```
+
+
+### DEVICE名の確認
 
 ```
-# cat /etc/network/interfaces
-========> controller01の例 cat ここから
-# This file describes the network interfaces available on your system
-# and how to activate them. For more information, see interfaces(5).
-
-source /etc/network/interfaces.d/*
-
-# The loopback network interface
-auto lo
-iface lo inet loopback
-
-# The primary network interface
-auto enp3s0
-iface enp3s0 inet static
-        address 192.168.101.1
-        netmask 255.255.255.0
-        network 192.168.101.0
-        broadcast 192.168.101.255
-        gateway 192.168.101.254
-        # dns-* options are implemented by the resolvconf package, if installed
-        dns-nameservers 8.8.8.8
-        dns-search st.local
-========< cat ここまで
-
+# <以降の手順にて、ここで確認したデバイス名(eno16780032 と eno33559296)で読み替えて実施すること>
+# ip a
+========>
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+2: eno16780032: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP qlen 1000
+    link/ether 00:0c:29:f2:dc:1b brd ff:ff:ff:ff:ff:ff
+    inet 192.168.101.11/24 brd 192.168.101.255 scope global eno16780032
+       valid_lft forever preferred_lft forever
+    inet6 fe80::20c:29ff:fef2:dc1b/64 scope link
+       valid_lft forever preferred_lft forever
+3: eno33559296: <BROADCAST,MULTICAST> mtu 1500 qdisc mq state DOWN qlen 1000
+    link/ether 00:0c:29:f2:dc:25 brd ff:ff:ff:ff:ff:ff
+========<
 ```
 
-- プロバイダーインターフェースの設定
-[対象: controller01, compute01]
-  - `INTERFACE_NAME` は環境に合わせて置き換えること</br>
-    ※ 私の環境ではcontroller01でh「enp6s0」、compute01では「enp2s0f1」
-  - メモ: `iface <config_name> <address_family> <method_name>`
-    - iface は スタンザと呼ばれる複数行からなる設定(他には、mapping, auto, source, allow-hotplug など)
-    - method_name = static: 固定の設定を入れたい時に使用。address, netmask は必須。その他、gatewayなど。
-    - method_name = manual: 自前で全部設定したい時に使用(今回の様に、address(IP)の設定なしでinterfaceの起動をしたい時などに使用)。 `/etc/network/if-\*.d/`以下のスクリプトで設定する。
+
+### ネットワークインターフェース の設定確認
 
 ```
-# vi /etc/network/interfaces
-========> 以下を追加 vi ここから
-# The provider network interface
-auto INTERFACE_NAME
-iface INTERFACE_NAME inet manual
-up ip link set dev $IFACE up
-down ip link set dev $IFACE down
-========< vi ここまで
+# <管理インターフェース用>
+# cat /etc/sysconfig/network-scripts/ifcfg-eno16780032
+========>
+TYPE=Ethernet
+BOOTPROTO=none
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=no
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+NAME=eth0
+UUID=88c111a1-1101-4e78-ad31-b110566fbcb5
+DEVICE=eno16780032
+ONBOOT=yes
+IPADDR=192.168.101.11
+PREFIX=24
+GATEWAY=192.168.101.254
+DNS1=8.8.8.8
+========<
+
+
+# <パブリックインターフェース用>
+# cat /etc/sysconfig/network-scripts/ifcfg-eno33559296
+========>
+[root@controller01 ~]# cat /etc/sysconfig/network-scripts/ifcfg-eno33559296
+TYPE=Ethernet
+BOOTPROTO=dhcp
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=no
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+NAME=eth1
+UUID=ab9e9c54-a4df-4e00-b2ea-c3e1ca969c77
+DEVICE=eno33559296
+ONBOOT=yes
+PEERDNS=yes
+PEERROUTES=yes
+========<
 ```
 
-- 名前解決
+### パブリックインターフェース の設定
+
+```
+# vi /etc/sysconfig/network-scripts/ifcfg-eno33559296
+========> 以下の部分のみ編集 他はそのまま
+DEVICE=eno33559296
+TYPE=Ethernet
+ONBOOT=yes
+BOOTPROTO=none
+========<
+
+# cat /etc/sysconfig/network-scripts/ifcfg-eno33559296
+========>
+TYPE=Ethernet
+#BOOTPROTO=dhcp
+BOOTPROTO=none
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=no
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_PEERDNS=yes
+IPV6_PEERROUTES=yes
+IPV6_FAILURE_FATAL=no
+NAME=eth1
+UUID=ab9e9c54-a4df-4e00-b2ea-c3e1ca969c77
+DEVICE=eno33559296
+ONBOOT=yes
+PEERDNS=yes
+PEERROUTES=yes
+========<
+```
+
+
+### 設定の反映
+
+```
+# reboot
+```
+
+
+## 名前解決
+
+### hostsの設定 (DNSの変わり)
+
+- hostsの設定
 [対象: controller01, compute01, cli01]
   - (注意) ディストリビューションによっては`127.0.1.1`の記載が存在する、`127.0.1.1`が存在した場合は、不具合を防ぐため削除(コメントアウト)すること
   - `127.0.0.1` については削除しないこと
 
 ```
 vi /etc/hosts
-========> 以下を参考に編集 vi ここから
-# 127.0.1.1     xxxx.st.local     xxxx
-127.0.0.1       localhost
-192.168.101.1   controller01.st.local     controller01
-192.168.101.2   compute01.st.local     compute01
-========< vi ここまで
+========> 以下を追加
+192.168.101.11   controller01
+192.168.101.21   compute01
+========<
 ```
 
 - 接続確認
@@ -82,16 +171,48 @@ vi /etc/hosts
 
 ```
 # ping -c 4 controller01
-# ping -c 4 controller01.st.local
 # ping -c 4 compute01
-# ping -c 4 compute01.st.local
 ```
 
-  - インターネット接続確認
+- インターネット接続確認
 
 ```
 # ping -c 4 openstack.org
 ```
+
+## ファイアウォールの無効化
+
+```
+# systemctl disable firewalld
+# systemctl stop firewalld
+```
+
+## その他確認
+
+```
+# hostname
+
+# localectl status
+========>
+System Locale: LANG=en_US.UTF-8
+    VC Keymap: jp
+   X11 Layout: jp
+========<
+
+timedatectl status
+========>
+Local time: Wed 2016-08-10 17:24:41 JST
+Universal time: Wed 2016-08-10 08:24:41 UTC
+  RTC time: Wed 2016-08-10 08:24:42
+ Time zone: Asia/Tokyo (JST, +0900)
+NTP enabled: n/a
+NTP synchronized: no
+RTC in local TZ: no
+DST active: n/a
+========<
+
+```
+
 
 ## NTP設定
 
@@ -99,87 +220,123 @@ controller01をNTPサーバーとして、その他のノードはcontroller01�
 
 ### NTPサーバー設定
 
-- Chrony インストール
-[対象: controller01]
+- Chrony インストール 設定
+[対象: controller01 のみ]
 
 ```
-# apt-get install chrony
-    Do you want to continue? [Y/n] Y
-```
+# yum -y install chrony
 
-- Chrony 設定
-[対象: controller01]
-  - メモ: `iburst` オプション:サーバに到達できない場合、ポーリング間隔ごとに、通常のパケット1個の代わりに、パケット8個をバースト的に送信する。これによって、初期化時間を短縮出来る。
+# rpm -qa | grep chrony
+========>
+chrony-2.1.1-1.el7.centos.x86_64
+========<
 
-```
-# vi /etc/chrony/chrony.conf
-========> 以下を参考に編集 vi ここから
-# pool 2.debian.pool.ntp.org offline iburst
-server ntp.nict.jp iburst
+# vi /etc/chrony.conf
+========> 以下追加しなきゃと思うが、、、、、、、、。後で。
 allow 0/0
-========< vi ここまで
-```
+========<
 
-- Chrony 設定反映
-[対象: controller01]
+# <chronyを使うので、ntpd停止の確認>
+# systemctl status ntpd.service
+========>
+● ntpd.service
+   Loaded: not-found (Reason: No such file or directory)
+   Active: inactive (dead)
+========<
 
-```
-# service chrony restart
-```
+# systemctl enable chronyd.service
 
-- Chrony 同期確認
-[対象: controller01]
+# systemctl restart chronyd.service
 
-```
+# systemctl list-unit-files --type service | egrep "(ntp|chronyd)"
+========>
+chronyd.service   enabled
+========<
+
 # chronyc sources
-設定したNTPサーバー(nict)に"^*"が付いていること
-========> chronyc sources 結果 ここから
-210 Number of sources = 1
+========>
+210 Number of sources = 4
 MS Name/IP address         Stratum Poll Reach LastRx Last sample
 ===============================================================================
-^* ntp-a2.nict.go.jp             1   6    17     3    +12us[ +121us] +/- 3852us
-========< chronyc sources 結果 ここまで
+^- 45.32.43.46.vultr.com         2   6    17    21    -28ms[  -28ms] +/-  380ms
+^- y.ns.gin.ntt.net              2   6    17    22  +4790us[+4790us] +/-  125ms
+^+ nipper.paina.jp               2   6    17    22   -629us[ -961us] +/-   15ms
+^* extendwings.com               2   6    17    22   -574us[ -898us] +/-   13ms
+========<
 ```
 
 
-### NTP クライアント設定
+### NTPクライアント設定
 
-- Chrony インストール
-[対象: compute01, cli01]
+- Chrony インストール 設定
+[対象: compute01]
 
-```
-# apt-get install chrony
-    Do you want to continue? [Y/n] Y
-```
+  - 補足: `iburst` オプション:サーバに到達できない場合、ポーリング間隔ごとに、通常のパケット1個の代わりに、パケット8個をバースト的に送信する。これによって、初期化時間を短縮出来る。
 
-- Chrony 設定
-[対象: compute01, cli01]
 
 ```
-# vi /etc/chrony/chrony.conf
-========> 以下を参考に編集 vi ここから
-# pool 2.debian.pool.ntp.org offline iburst
+# yum -y install chrony
+
+# rpm -qa | grep chrony
+========>
+chrony-2.1.1-1.el7.centos.x86_64
+========<
+
+# vi /etc/chrony.conf
+========>
+# <以下コメントアウト>
+# server 0.centos.pool.ntp.org iburst
+# server 1.centos.pool.ntp.org iburst
+# server 2.centos.pool.ntp.org iburst
+# server 3.centos.pool.ntp.org iburst
+
+# <以下追加>
 server controller01 iburst
-========< vi ここまで
-```
+========<
 
-- Chrony 設定反映
-[対象: compute01, cli01]
+# <chronyを使うので、ntpd停止の確認>
+# systemctl status ntpd.service
+========>
+● ntpd.service
+   Loaded: not-found (Reason: No such file or directory)
+   Active: inactive (dead)
+========<
 
-```
-# service chrony restart
-```
+# systemctl enable chronyd.service
 
-- Chrony 同期確認
-[対象: compute01, cli01]
+# systemctl restart chronyd.service
 
-```
+# systemctl list-unit-files --type service | egrep "(ntp|chronyd)"
+========>
+chronyd.service   enabled
+========<
+
 # chronyc sources
-controller01 に "^*" が付いていること
-========> chronyc sources 結果 ここから
-210 Number of sources = 1
-MS Name/IP address         Stratum Poll Reach LastRx Last sample
-===============================================================================
-^* controller01.st.local         2   6    17     3   -763ns[  -13us] +/- 4261us
-========< chronyc sources 結果 ここまで
+========>
+
+========<
 ```
+
+## リポジトリ確認
+
+CentOSの場合は、デフォルトで含まれるExtrasにRDO関連のパッケージが含まれている
+
+```
+grep -i Extras /etc/yum.repos.d/*
+========>
+/etc/yum.repos.d/CentOS-Base.repo:[extras]
+/etc/yum.repos.d/CentOS-Base.repo:name=CentOS-$releasever - Extras
+/etc/yum.repos.d/CentOS-Base.repo:mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
+/etc/yum.repos.d/CentOS-Base.repo:#baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/
+/etc/yum.repos.d/CentOS-Sources.repo:[extras-source]
+/etc/yum.repos.d/CentOS-Sources.repo:name=CentOS-$releasever - Extras Sources
+/etc/yum.repos.d/CentOS-Sources.repo:baseurl=http://vault.centos.org/centos/$releasever/extras/Source/
+/etc/yum.repos.d/CentOS-Vault.repo:[C7.0.1406-extras]
+/etc/yum.repos.d/CentOS-Vault.repo:name=CentOS-7.0.1406 - Extras
+/etc/yum.repos.d/CentOS-Vault.repo:baseurl=http://vault.centos.org/7.0.1406/extras/$basearch/
+/etc/yum.repos.d/CentOS-Vault.repo:[C7.1.1503-extras]
+/etc/yum.repos.d/CentOS-Vault.repo:name=CentOS-7.1.1503 - Extras
+/etc/yum.repos.d/CentOS-Vault.repo:baseurl=http://vault.centos.org/7.1.1503/extras/$basearch/
+```
+
+が、ReadHatの場合は、別途追加が必要
