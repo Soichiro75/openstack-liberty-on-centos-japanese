@@ -51,6 +51,8 @@
 
 - `IPv6 Configuration`?を選択
 
+|設定項目|設定値|備考|
+|---|---|---|
 |IPv6|無効||
 
 - `DNS Configuration`を選択
