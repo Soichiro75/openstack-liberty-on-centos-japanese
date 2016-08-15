@@ -363,28 +363,3 @@ MS Name/IP address   Stratum Poll Reach LastRx Last sample
 ^* controller01      3       6    17    3  +2211ns[ +88us] +/- 13ms
 ========<
 ```
-
-## リポジトリ確認
-
-CentOSの場合は、デフォルトで含まれるExtrasにRDO関連のパッケージが含まれているが、ReadHatの場合は別途追加が必要
-
-
-- 確認 [対象: controller01, compute01]
-
-```
-grep -i Extras /etc/yum.repos.d/*
-========>
-/etc/yum.repos.d/CentOS-Base.repo:[extras]
-/etc/yum.repos.d/CentOS-Base.repo:name=CentOS-$releasever - Extras
-/etc/yum.repos.d/CentOS-Base.repo:mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
-/etc/yum.repos.d/CentOS-Base.repo:#baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/
-/etc/yum.repos.d/CentOS-Sources.repo:[extras-source]
-/etc/yum.repos.d/CentOS-Sources.repo:name=CentOS-$releasever - Extras Sources
-/etc/yum.repos.d/CentOS-Sources.repo:baseurl=http://vault.centos.org/centos/$releasever/extras/Source/
-/etc/yum.repos.d/CentOS-Vault.repo:[C7.0.1406-extras]
-/etc/yum.repos.d/CentOS-Vault.repo:name=CentOS-7.0.1406 - Extras
-/etc/yum.repos.d/CentOS-Vault.repo:baseurl=http://vault.centos.org/7.0.1406/extras/$basearch/
-/etc/yum.repos.d/CentOS-Vault.repo:[C7.1.1503-extras]
-/etc/yum.repos.d/CentOS-Vault.repo:name=CentOS-7.1.1503 - Extras
-/etc/yum.repos.d/CentOS-Vault.repo:baseurl=http://vault.centos.org/7.1.1503/extras/$basearch/
-```
