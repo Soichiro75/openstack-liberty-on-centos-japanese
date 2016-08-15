@@ -272,9 +272,17 @@ chrony-2.1.1-1.el7.centos.x86_64
 
 # <全セグメントから時刻同期許可>
 # vi /etc/chrony.conf
-========> 以下を追加
+========> 以下を参考に コメントアウト & 追加
+# server 0.centos.pool.ntp.org iburst
+# server 1.centos.pool.ntp.org iburst
+# server 2.centos.pool.ntp.org iburst
+# server 3.centos.pool.ntp.org iburst
+
+server ntp.nict.jp iburst
 allow 0/0
 ========<
+
+
 
 # <chronyを使うので、ntpd停止の確認>
 # systemctl status ntpd.service
@@ -295,13 +303,10 @@ chronyd.service   enabled
 
 # chronyc sources
 ========>
-210 Number of sources = 4
-MS Name/IP address         Stratum Poll Reach LastRx Last sample
-===============================================================================
-^- 45.32.43.46.vultr.com         2   6    17    21    -28ms[  -28ms] +/-  380ms
-^- y.ns.gin.ntt.net              2   6    17    22  +4790us[+4790us] +/-  125ms
-^+ nipper.paina.jp               2   6    17    22   -629us[ -961us] +/-   15ms
-^* extendwings.com               2   6    17    22   -574us[ -898us] +/-   13ms
+210 Number of sources = 1
+MS Name/IP address    Stratum Poll Reach LastRx Last sample
+====================================================================
+^* ntp-b2.nict.go.jp  1   6    17    29   -260us[ -394us] +/- 4709us
 ========<
 ```
 
