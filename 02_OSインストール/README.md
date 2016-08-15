@@ -64,14 +64,12 @@ OpenStackの controller01 と compute01 用のVMとなるCentOS7 をインスト
 |SOFTWARE SELECTION|Minimal|Minimal Install|デフォルト|
 |INSTALLATION DESTINATION|sda 200GB|sda 200GB||
 |NETWORK 若番(VM Network 101)|-|-|設定画面に進むために`configure`押下|
-|NETWORK 若番 Connection name|eth0|eth0|Connection nameはデフォルトの`enoxxxxxxxx` だと分かりにくいので`ethx`に書き換え|
 |NETWORK 若番 IPv4 Method|Manual|Manual||
 |NETWORK 若番 Address(IP/Netmask/DGW)|192.168.101.11 255.255.255.0 192.168.101.254|192.168.101.21 255.255.255.0 192.168.101.254||
 |NETWORK 若番 DNS|8.8.8.8|8.8.8.8||
 |NETWORK 若番 IPv6 Method|Ignore|Ignore|OpenStackでたぶん使わないと思う。。。。後で確認。|
 |NETWORK 若番 General|Automatically connect~ にチェック|Automatically connect~ にチェック||
 |NETWORK 老番(VM Network 102)|-|-|設定画面に進むために`configure`押下|
-|NETWORK 老番 Connection name|eth1|eth1|Connection nameはデフォルトの`enoxxxxxxxx` だと分かりにくいので`ethx`に書き換え|
 |NETWORK 老番 IPv6 Method|Ignore|Ignore|IPv4については設定しない(デフォルトのDHCPのまま)|
 |NETWORK 老番 General|Automatically connect~ にチェック|Automatically connect~ にチェック||
 |NETWORK 老番 ||||
@@ -81,6 +79,9 @@ OpenStackの controller01 と compute01 用のVMとなるCentOS7 をインスト
 |ROOT PASSWORD|Password123$|Password123$||
 |Installing が完了するまで 約5分 待機|-|-||
 |Reboot|-|-||
+
+<!-- |NETWORK 若番 Connection name|eth0|eth0|Connection nameはデフォルトの`enoxxxxxxxx` だと分かりにくいので`ethx`に書き換え| -->
+<!-- |NETWORK 老番 Connection name|eth1|eth1|Connection nameはデフォルトの`enoxxxxxxxx` だと分かりにくいので`ethx`に書き換え| -->
 
 
 - (Option) vClientにて、controller01,compute01ともに、</br>
