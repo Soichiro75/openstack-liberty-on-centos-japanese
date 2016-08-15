@@ -1,6 +1,6 @@
 # 03_OS事前準備
 
-ネットワーク設定、DNS(今回はhosts)、NTP、yumリボジトリ 等のOS周りの設定をする
+ネットワーク設定、DNS(今回はhosts)、NTP、yumリボジトリ、OpenStackのパッケージインストール 等を設定する
 
 
 ## Network周りの設定
@@ -361,5 +361,186 @@ chronyd.service   enabled
 MS Name/IP address   Stratum Poll Reach LastRx Last sample
 ==========================================================
 ^* controller01      3       6    17    3  +2211ns[ +88us] +/- 13ms
+========<
+```
+
+
+### OpenStack用リポジトリ
+
+http://docs.openstack.org/liberty/ja/install-guide-rdo/environment-packages.html
+
+
+
+## EPELの無効確認
+
+- EPEL無効の確認 [対象: controller01, compute01]
+
+RDO パッケージを使用する場合には EPEL を無効にすることを推奨する。 EPEL のいくつかのアップデートには後方互換性がないものがあるため。
+
+```
+# <何も表示されないこと>
+ls -l /etc/yum.repos.d/ | grep -i epel
+```
+
+
+## リポジトリ確認
+
+CentOSの場合は、デフォルトで含まれるExtrasにRDO関連のパッケージが含まれているが、ReadHatの場合は別途追加が必要
+
+
+- 確認 [対象: controller01, compute01]
+
+```
+grep -i Extras /etc/yum.repos.d/*
+========>
+/etc/yum.repos.d/CentOS-Base.repo:[extras]
+/etc/yum.repos.d/CentOS-Base.repo:name=CentOS-$releasever - Extras
+/etc/yum.repos.d/CentOS-Base.repo:mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
+/etc/yum.repos.d/CentOS-Base.repo:#baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/
+/etc/yum.repos.d/CentOS-Sources.repo:[extras-source]
+/etc/yum.repos.d/CentOS-Sources.repo:name=CentOS-$releasever - Extras Sources
+/etc/yum.repos.d/CentOS-Sources.repo:baseurl=http://vault.centos.org/centos/$releasever/extras/Source/
+/etc/yum.repos.d/CentOS-Vault.repo:[C7.0.1406-extras]
+/etc/yum.repos.d/CentOS-Vault.repo:name=CentOS-7.0.1406 - Extras
+/etc/yum.repos.d/CentOS-Vault.repo:baseurl=http://vault.centos.org/7.0.1406/extras/$basearch/
+/etc/yum.repos.d/CentOS-Vault.repo:[C7.1.1503-extras]
+/etc/yum.repos.d/CentOS-Vault.repo:name=CentOS-7.1.1503 - Extras
+/etc/yum.repos.d/CentOS-Vault.repo:baseurl=http://vault.centos.org/7.1.1503/extras/$basearch/
+```
+
+
+  - (補足) RedHatの場合は実施する(この手順ではCentOSを使用のため実施しない 以下参考のため記載)
+
+```
+# subscription-manager repos --enable=rhel-7-server-optional-rpms
+# subscription-manager repos --enable=rhel-7-server-extras-rpms
+```
+
+
+## OSパッケージの最新化
+
+- OSパッケージのアップデート [対象: controller01, compute01]
+
+```
+# yum clean allow
+
+# yum list
+
+# <約10分弱>
+# yum -y update
+
+# reboot
+```
+
+
+## 自動アップデートの無効確認
+
+OpenStack 環境に影響を与える可能性があるため、自動更新サービスは無効にする
+
+- 無効確認 [対象: controller01, compute01]
+
+```
+# systemctl status yum-cron
+========>
+● yum-cron.service
+   Loaded: not-found (Reason: No such file or directory)
+   Active: inactive (dead)
+========<
+
+
+# cat /etc/yum/yum-cron.conf | grep apply_updates
+========>
+apply_updates = no
+========<
+```
+
+
+## OpenStackリポジトリーの有効化(インストール)
+
+- OpenStackのパッケージインストール [対象: controller01, compute01]
+
+```
+yum install -y centos-release-openstack-liberty
+========>
+(省略)
+Installed:
+  centos-release-openstack-liberty.noarch 0:1-4.el7
+
+Complete!
+========<
+```
+
+- (補足) RedHatの場合は上記の代わりに以下を実施する(この手順ではCentOSを使用のため実施しない 以下参考のため記載)
+
+```
+# yum install https://rdoproject.org/repos/openstack-liberty/rdo-release-liberty.rpm
+```
+
+## OpenStackクライアントのインストール [対象: controller01, compute01]
+
+```
+yum install -y python-openstackclient
+ ========>
+ Installed:
+   python-openstackclient.noarch 0:1.7.2-1.el7
+
+ Dependency Installed:
+   PyYAML.x86_64 0:3.10-11.el7                                      libyaml.x86_64 0:0.1.4-11.el7_0
+   pyOpenSSL.noarch 0:0.15.1-1.el7                                  pyparsing.noarch 0:2.0.3-1.el7
+   python-backports.x86_64 0:1.0-8.el7                              python-backports-ssl_match_hostname.noarch 0:3.4.0.2-4.el7
+   python-chardet.noarch 0:2.2.1-1.el7_1                            python-cinderclient.noarch 0:1.4.0-1.el7
+   python-cliff.noarch 0:1.15.0-1.el7                               python-cliff-tablib.noarch 0:1.1-3.el7
+   python-cmd2.noarch 0:0.6.8-3.el7                                 python-crypto.x86_64 0:2.6.1-1.el7.centos
+   python-enum34.noarch 0:1.0.4-1.el7                               python-extras.noarch 0:0.0.3-2.el7
+   python-fixtures.noarch 0:1.4.0-2.el7                             python-glanceclient.noarch 1:1.1.0-1.el7
+   python-httplib2.noarch 0:0.9.2-1.el7                             python-idna.noarch 0:2.0-1.el7
+   python-ipaddress.noarch 0:1.0.7-4.el7                            python-jsonpatch.noarch 0:1.2-3.el7.centos
+   python-jsonpointer.noarch 0:1.9-2.el7                            python-jsonschema.noarch 0:2.3.0-1.el7
+   python-keyring.noarch 0:5.0-4.el7                                python-keystoneclient.noarch 1:1.7.2-1.el7
+   python-linecache2.noarch 0:1.0.0-1.el7                           python-mimeparse.noarch 0:0.1.4-1.el7
+   python-monotonic.noarch 0:0.3-1.el7                              python-msgpack.x86_64 0:0.4.6-3.el7
+   python-netaddr.noarch 0:0.7.18-1.el7                             python-netifaces.x86_64 0:0.10.4-1.el7
+   python-neutronclient.noarch 0:3.1.0-1.el7                        python-novaclient.noarch 1:2.30.1-1.el7
+   python-pbr.noarch 0:1.8.1-2.el7                                  python-ply.noarch 0:3.4-10.el7
+   python-prettytable.noarch 0:0.7.2-2.el7.centos                   python-pycparser.noarch 0:2.14-1.el7
+   python-requests.noarch 0:2.10.0-1.el7                            python-simplejson.x86_64 0:3.5.3-5.el7
+   python-six.noarch 0:1.9.0-2.el7                                  python-stevedore.noarch 0:1.8.0-1.el7
+   python-tablib.noarch 0:0.10.0-1.el7                              python-testtools.noarch 0:1.8.0-2.el7
+   python-traceback2.noarch 0:1.4.0-2.el7                           python-unicodecsv.noarch 0:0.14.1-1.el7
+   python-unittest2.noarch 0:1.0.1-1.el7                            python-urllib3.noarch 0:1.15.1-2.el7
+   python-warlock.noarch 0:1.0.1-1.el7                              python-webob.noarch 0:1.4.1-2.el7
+   python-wrapt.x86_64 0:1.10.5-3.el7                               python2-appdirs.noarch 0:1.4.0-4.el7
+   python2-babel.noarch 0:2.3.4-1.el7                               python2-cffi.x86_64 0:1.5.2-1.el7
+   python2-cryptography.x86_64 0:1.2.1-3.el7                        python2-debtcollector.noarch 0:0.8.0-1.el7
+   python2-iso8601.noarch 0:0.1.11-1.el7                            python2-os-client-config.noarch 0:1.7.4-1.el7
+   python2-oslo-config.noarch 2:2.4.0-1.el7                         python2-oslo-i18n.noarch 0:2.6.0-1.el7
+   python2-oslo-serialization.noarch 0:1.9.0-1.el7                  python2-oslo-utils.noarch 0:2.5.0-1.el7
+   python2-pyasn1.noarch 0:0.1.9-6.el7.1                            python2-pysocks.noarch 0:1.5.6-3.el7
+   python2-setuptools.noarch 0:22.0.5-1.el7                         pytz.noarch 0:2012d-5.el7
+
+ Complete!
+ ========<
+
+```
+
+## SELinux の設定
+
+OpenStackは、openstack-selinux パッケージにより、OpenStack サービスのセキュリティーポリシーを自動的に管理する
+
+
+- openstack-selinux パッケージ インストール
+
+```
+# yum install -y openstack-selinux
+========>
+Installed:
+  openstack-selinux.noarch 0:0.6.57-1.el7
+
+Dependency Installed:
+  audit-libs-python.x86_64 0:2.4.1-5.el7      checkpolicy.x86_64 0:2.1.12-6.el7              libcgroup.x86_64 0:0.41-8.el7
+  libselinux-python.x86_64 0:2.2.2-6.el7      libsemanage-python.x86_64 0:2.1.10-18.el7      policycoreutils-python.x86_64 0:2.2.5-20.el7
+  python-IPy.noarch 0:0.75-6.el7              setools-libs.x86_64 0:3.3.7-46.el7
+
+Complete!
 ========<
 ```
