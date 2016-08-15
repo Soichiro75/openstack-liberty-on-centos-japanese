@@ -375,7 +375,7 @@ http://docs.openstack.org/liberty/ja/install-guide-rdo/environment-packages.html
 
 - EPEL無効の確認 [対象: controller01, compute01]
 
-RDO パッケージを使用する場合には EPEL を無効にすることを推奨する。 EPEL のいくつかのアップデートには後方互換性がないものがあるため。
+EPELのいくつかのアップデートには後方互換性がないものがあるため、RDOパッケージを使用する場合には、EPELを無効にすることを推奨する
 
 ```
 # <何も表示されないこと>
@@ -478,6 +478,8 @@ Complete!
 
 ## OpenStackクライアントのインストール [対象: controller01, compute01]
 
+- クライアントのインストール [対象: controller01, compute01]
+
 ```
 yum install -y python-openstackclient
  ========>
@@ -528,7 +530,7 @@ yum install -y python-openstackclient
 OpenStackは、openstack-selinux パッケージにより、OpenStack サービスのセキュリティーポリシーを自動的に管理する
 
 
-- openstack-selinux パッケージ インストール
+- openstack-selinux パッケージ インストール  [対象: controller01, compute01]
 
 ```
 # yum install -y openstack-selinux
