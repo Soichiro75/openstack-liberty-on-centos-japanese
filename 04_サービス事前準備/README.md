@@ -1,7 +1,5 @@
 # 04_サービス事前準備
 
-*** 自分のリポジトリ OpenStack on Ubuntu オンプレ からコピペ。Cent用に書き直し中 ***
-
 MariaDB、RabbitMQ の準備
 
 
@@ -300,4 +298,125 @@ MariaDB [(none)]> exit;
 Bye
 [root@controller01 ~]#
 ========<
+```
+
+
+
+
+## NoSQL インストール
+
+http://docs.openstack.org/liberty/ja/install-guide-rdo/environment-nosql-database.html
+
+Telemetry サービスは、情報を保存するために NoSQL データベースを使用する。このデータベースは一般的にコントローラーノードで実行する。OpenStackのドキュメントでは MongoDB を使用しているが、本手順では Telemetery は使用しないため(手順が一通り出来たら追加予定)、NoSQLのインストールはしない。
+
+補足:
+Telemetry サービス (コード名 ceilometer): OpenStack サービスから計測項目を収集する。必要に応じてアラームを上げる事が出来る。
+
+
+
+
+## メッセージキュー インストール
+
+http://docs.openstack.org/liberty/ja/install-guide-rdo/environment-messaging.html
+
+OpenStack は、サービス間での操作と状態をやり取りするのに、メッセージキュー を使用する。メッセージキューサービスは、一般的にコントローラーノードで動作する。OpenStack は RabbitMQ, Qpid, ZeroMQ などのメッセージキューサービスをサポートしている。しかし、ディストリビューションによりサポートされているメッセージキューサービスは異なる。この手順では、ほとんどのディストリビューションがサポートする RabbitMQ メッセージキューサービスを導入する。
+
+
+- パッケージのインストール [対象: controller01]
+
+```
+# yum install -y rabbitmq-server
+========>
+Installed:
+  rabbitmq-server.noarch 0:3.6.2-3.el7
+
+Dependency Installed:
+  erlang-asn1.x86_64 0:18.3.3-1.el7                 erlang-compiler.x86_64 0:18.3.3-1.el7        erlang-crypto.x86_64 0:18.3.3-1.el7
+  erlang-eldap.x86_64 0:18.3.3-1.el7                erlang-erts.x86_64 0:18.3.3-1.el7            erlang-hipe.x86_64 0:18.3.3-1.el7
+  erlang-inets.x86_64 0:18.3.3-1.el7                erlang-kernel.x86_64 0:18.3.3-1.el7          erlang-mnesia.x86_64 0:18.3.3-1.el7
+  erlang-os_mon.x86_64 0:18.3.3-1.el7               erlang-otp_mibs.x86_64 0:18.3.3-1.el7        erlang-public_key.x86_64 0:18.3.3-1.el7
+  erlang-runtime_tools.x86_64 0:18.3.3-1.el7        erlang-sasl.x86_64 0:18.3.3-1.el7            erlang-sd_notify.x86_64 0:0.1-9.el7
+  erlang-snmp.x86_64 0:18.3.3-1.el7                 erlang-ssl.x86_64 0:18.3.3-1.el7             erlang-stdlib.x86_64 0:18.3.3-1.el7
+  erlang-syntax_tools.x86_64 0:18.3.3-1.el7         erlang-tools.x86_64 0:18.3.3-1.el7           erlang-xmerl.x86_64 0:18.3.3-1.el7
+  lksctp-tools.x86_64 0:1.0.13-3.el7
+
+Complete!
+========<
+```
+
+
+- Rabbitmqの自動起動設定と起動 [対象: controller01]
+
+```
+# systemctl enable rabbitmq-server.service
+========>
+Created symlink from /etc/systemd/system/multi-user.target.wants/rabbitmq-server.service to /usr/lib/systemd/system/rabbitmq-server.service.
+========<
+
+
+# systemctl start rabbitmq-server.service
+```
+
+
+- openstack ユーザーの追加 [対象: controller01]
+
+```
+# rabbitmqctl add_user openstack Password123$
+========>
+Creating user "openstack" ...
+========<
+```
+
+
+- openstack ユーザーへの、設定/書き込み/読み出し の許可 [対象: controller01]
+
+```
+# rabbitmqctl set_permissions openstack ".*" ".*" ".*"
+========>
+Setting permissions for user "openstack" in vhost "/" ...
+========<
+```
+
+
+- 待ち受けるIPアドレスとポート の設定
+
+ここ違う、、、、、書き直し予定。。。。。。
+
+```
+# vi /etc/rabbitmq/rabbitmq-env.conf
+########> 以下を参考に編集
+NODENAME=controller01
+NODE_IP_ADDRESS=192.168.101.1
+NODE_PORT=5672
+########<
+```
+
+- RabbitMQ の再起動 と 起動確認
+
+```
+# ls -l /var/log/rabbitmq/
+========>
+total 8
+-rw-r--r-- 1 rabbitmq rabbitmq 2160 Aug  3 17:14 rabbit@controller01.log
+-rw-r--r-- 1 rabbitmq rabbitmq    0 Aug  3 17:13 rabbit@controller01-sasl.log
+-rw-r--r-- 1 rabbitmq rabbitmq    0 Aug  3 17:13 startup_err
+-rw-r--r-- 1 rabbitmq rabbitmq  350 Aug  3 17:13 startup_log
+========<
+
+# service rabbitmq-server stop
+
+# service rabbitmq-server stop
+
+# ls -l /var/log/rabbitmq/
+========>
+total 12
+-rw-r--r-- 1 rabbitmq rabbitmq 1969 Aug  3 17:19 controller01.log
+-rw-r--r-- 1 rabbitmq rabbitmq    0 Aug  3 17:19 controller01-sasl.log
+-rw-r--r-- 1 rabbitmq rabbitmq 2160 Aug  3 17:14 rabbit@controller01.log
+-rw-r--r-- 1 rabbitmq rabbitmq    0 Aug  3 17:13 rabbit@controller01-sasl.log
+-rw-r--r-- 1 rabbitmq rabbitmq    0 Aug  3 17:19 startup_err
+-rw-r--r-- 1 rabbitmq rabbitmq  336 Aug  3 17:19 startup_log
+========<
+
+# tail -f /var/log/rabbitmq/
 ```
