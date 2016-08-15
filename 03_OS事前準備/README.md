@@ -19,13 +19,29 @@
 
 ```
 # systemctl disable NetworkManager
+========>
+Removed symlink /etc/systemd/system/multi-user.target.wants/NetworkManager.service.
+Removed symlink /etc/systemd/system/dbus-org.freedesktop.NetworkManager.service.
+Removed symlink /etc/systemd/system/dbus-org.freedesktop.nm-dispatcher.service.
+========<
+
 # systemctl stop NetworkManager
 ```
 
 - Networkサービス の有効化 [対象: controller01, compute01]
 ```
 # systemctl enable network
+========>
+network.service is not a native service, redirecting to /sbin/chkconfig.
+Executing /sbin/chkconfig network on
+========<
+
 # chkconfig --list
+========>
+(省略)
+network         0:off   1:off   2:on    3:on    4:on    5:on    6:off
+========<
+
 # systemctl start network
 ```
 
