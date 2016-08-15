@@ -1,4 +1,4 @@
-# 02_OSインストール
+# OSインストール
 
 OpenStackの controller01 と compute01 用のVMとなるCentOS7 をインストールする
 

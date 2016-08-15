@@ -1,4 +1,4 @@
-# 04_サービス事前準備
+# サービス事前準備
 
 MariaDB、RabbitMQ の準備
 
@@ -377,7 +377,7 @@ Setting permissions for user "openstack" in vhost "/" ...
 ========<
 ```
 
-
+<!---
 - 待ち受けるIPアドレスとポート の設定
 
 ここ違う、、、、、書き直し予定。。。。。。
@@ -420,3 +420,4 @@ total 12
 
 # tail -f /var/log/rabbitmq/
 ```
+--->
