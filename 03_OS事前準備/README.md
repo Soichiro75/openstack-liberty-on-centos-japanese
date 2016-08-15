@@ -222,6 +222,105 @@ vi /etc/hosts
 
 ```
 
+
+## open-vm-tools インストール
+
+https://kb.vmware.com/selfservice/microsites/search.do?language=en_US&cmd=displayKC&externalId=2074713
+
+CentOS7 ではVMware-toolsではなく、open-vm-toolsインストール推奨
+
+
+- open-vm-tools インストール [対象: controller01, compute01]
+
+```
+# yum install -y open-vm-tools
+```
+
+
+- サービス有効化 [対象: controller01, compute01]
+
+```
+# service vmtoolsd restart
+========>
+Redirecting to /bin/systemctl restart  vmtoolsd.service
+========<
+```
+
+- バージョン確認 [対象: controller01, compute01]
+
+```
+# vmtoolsd -v
+========>
+VMware Tools daemon, version 9.10.2.48224 (build-2822639)
+========<
+```
+
+<!---
+- キーのインポート [対象: controller01, compute01]
+
+```
+# rpm --import http://packages.vmware.com/tools/keys/VMWARE-PACKAGING-GPG-RSA-KEY.pub
+```
+
+
+- リポジトリ追加 [対象: controller01, compute01]
+
+```
+# vi /etc/yum.repos.d/vmware-tools.repo
+[vmware-tools]
+name = VMware Tools
+baseurl = http://packages.vmware.com/packages/rhel7/x86_64/
+enabled = 1
+gpgcheck = 1
+```
+
+
+- パッケージインストール [対象: controller01, compute01]
+```
+# yum clean all
+# yum list
+# yum update
+# yum install open-vm-tools-deploypkg
+
+としたいが、以下エラー発生、そのため、open-vm-tools-deploypkgではなく、open-vm-toolsをインストールすることとする
+->Finished Dependency Resolution
+Error: Package: open-vm-tools-deploypkg-9.4.10-3.x86_64 (vmware-tools)
+           Requires: open-vm-tools < 9.5
+           Available: open-vm-tools-9.10.2-4.el7.x86_64 (base)
+               open-vm-tools = 9.10.2-4.el7
+           Available: open-vm-tools-9.10.2-5.el7_2.x86_64 (updates)
+               open-vm-tools = 9.10.2-5.el7_2
+Error: Package: open-vm-tools-deploypkg-9.4.10-3.x86_64 (vmware-tools)
+           Requires: open-vm-tools < 9.5
+           Available: open-vm-tools-9.10.2-4.el7.x86_64 (base)
+               open-vm-tools = 9.10.2-4.el7
+           Installing: open-vm-tools-9.10.2-5.el7_2.x86_64 (updates)
+               open-vm-tools = 9.10.2-5.el7_2
+ You could try using --skip-broken to work around the problem
+ You could try running: rpm -Va --nofiles --nodigest
+
+```
+
+- vmtools再起動 [対象: controller01, compute01]
+
+```
+# service vmtoolsd restart
+vmtoolsd を停止中:                                         [  OK  ]
+vmtoolsd を起動中:                                         [  OK  ]
+```
+
+
+- vmtools 確認 [対象: controller01, compute01]
+
+```
+# vmtoolsd -v
+VMware Tools daemon, version 9.4.6.33107 (build-1770165)
+```
+
+--->
+
+
+
 ## その他確認
 
 - 確認 [対象: controller01, compute01]
