@@ -90,7 +90,7 @@ IPV6_DEFROUTE=yes
 IPV6_PEERDNS=yes
 IPV6_PEERROUTES=yes
 IPV6_FAILURE_FATAL=no
-NAME=eth0
+NAME=eno16780032
 UUID=88c111a1-1101-4e78-ad31-b110566fbcb5
 DEVICE=eno16780032
 ONBOOT=yes
@@ -115,7 +115,7 @@ IPV6_DEFROUTE=yes
 IPV6_PEERDNS=yes
 IPV6_PEERROUTES=yes
 IPV6_FAILURE_FATAL=no
-NAME=eth1
+NAME=eno33559296
 UUID=ab9e9c54-a4df-4e00-b2ea-c3e1ca969c77
 DEVICE=eno33559296
 ONBOOT=yes
@@ -150,7 +150,7 @@ IPV6_DEFROUTE=yes
 IPV6_PEERDNS=yes
 IPV6_PEERROUTES=yes
 IPV6_FAILURE_FATAL=no
-NAME=eth1
+NAME=eno33559296
 UUID=ab9e9c54-a4df-4e00-b2ea-c3e1ca969c77
 DEVICE=eno33559296
 ONBOOT=yes
@@ -205,11 +205,21 @@ vi /etc/hosts
 
 ## ファイアウォールの無効化
 
-- 無効化設定 [対象: controller01, compute01]
+- 無効化確認 [対象: controller01, compute01]
 
 ```
+# systemctl status firewalld
+========>
+● firewalld.service
+   Loaded: not-found (Reason: No such file or directory)
+   Active: inactive (dead)
+========<
+
+
+# <firewalldがloadされている かつ 動作している場合は以下を実施し停止する>
 # systemctl disable firewalld
 # systemctl stop firewalld
+
 ```
 
 ## その他確認
@@ -260,8 +270,9 @@ controller01をNTPサーバーとして、その他のノードはcontroller01�
 chrony-2.1.1-1.el7.centos.x86_64
 ========<
 
+# <全セグメントから時刻同期許可>
 # vi /etc/chrony.conf
-========> 以下追加しなきゃと思うが、、、、、、、、。後で。
+========> 以下を追加
 allow 0/0
 ========<
 
@@ -341,7 +352,10 @@ chronyd.service   enabled
 
 # chronyc sources
 ========>
-
+210 Number of sources = 1
+MS Name/IP address   Stratum Poll Reach LastRx Last sample
+==========================================================
+^* controller01      3       6    17    3  +2211ns[ +88us] +/- 13ms
 ========<
 ```
 
