@@ -1,13 +1,11 @@
 # 03_OS事前準備
 
-**自分のリポジトリOpenStack on Ubuntu on オンプレ のコピッたまま。OpenStack on CentOS on ESXi 用に書き換え中。**
-
-ネットワーク設定、DNS(今回はhosts)、NTP 等のOS周りの設定をする
+ネットワーク設定、DNS(今回はhosts)、NTP、yumリボジトリ 等のOS周りの設定をする
 
 
 ## Network周りの設定
 
-### ssh ログイン
+### 接続
 
 - ログイン
   - 操作PC のTera term から controller01(192.168.101.11) と compute01(192.168.101.21) に SSHログイン</br>
@@ -17,25 +15,27 @@
 
 ### NetworkManagerサービス の無効化 と Networkサービス の有効化
 
-  - NetworkManagerサービスの無効化
-
-  ```
-  # systemctl disable NetworkManager
-  # systemctl stop NetworkManager
-  ```
-
-  - Networkサービス の有効化
-  ```
-  # systemctl enable network
-  # chkconfig --list
-  # systemctl start network
-  ```
-
-
-### DEVICE名の確認
+- NetworkManagerサービスの無効化 [対象: controller01, compute01]
 
 ```
-# <以降の手順にて、ここで確認したデバイス名(eno16780032 と eno33559296)で読み替えて実施すること>
+# systemctl disable NetworkManager
+# systemctl stop NetworkManager
+```
+
+- Networkサービス の有効化 [対象: controller01, compute01]
+```
+# systemctl enable network
+# chkconfig --list
+# systemctl start network
+```
+
+
+### デバイス名の確認
+
+- デバイス名の確認 [対象: controller01, compute01]
+
+```
+# <環境によってデバイス名は異なる。(ここでは、eno16780032 と eno33559296)以降デバイス名については読み替えて実施すること>
 # ip a
 ========>
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN
@@ -57,6 +57,8 @@
 
 
 ### ネットワークインターフェース の設定確認
+
+- 確認 [対象: controller01, compute01]
 
 ```
 # <管理インターフェース用>
@@ -108,6 +110,8 @@ PEERROUTES=yes
 
 ### パブリックインターフェース の設定
 
+- 設定 [対象: controller01, compute01]
+
 ```
 # vi /etc/sysconfig/network-scripts/ifcfg-eno33559296
 ========> 以下の部分のみ編集 他はそのまま
@@ -142,6 +146,8 @@ PEERROUTES=yes
 
 ### 設定の反映
 
+- 設定 [対象: controller01, compute01]
+
 ```
 # reboot
 ```
@@ -151,7 +157,7 @@ PEERROUTES=yes
 
 ### hostsの設定 (DNSの変わり)
 
-- hostsの設定
+- hostsの設定 [対象: controller01, compute01]
 [対象: controller01, compute01, cli01]
   - (注意) ディストリビューションによっては`127.0.1.1`の記載が存在する、`127.0.1.1`が存在した場合は、不具合を防ぐため削除(コメントアウト)すること
   - `127.0.0.1` については削除しないこと
@@ -165,22 +171,25 @@ vi /etc/hosts
 ```
 
 - 接続確認
-[対象: controller01, compute01, cli01]
 
-  - hosts動作確認
+  - hosts動作確認 [対象: controller01, compute01]
 
 ```
+# <疎通できること>
 # ping -c 4 controller01
 # ping -c 4 compute01
 ```
 
-- インターネット接続確認
+- インターネット接続確認 [対象: controller01, compute01]
 
 ```
+# <疎通できること>
 # ping -c 4 openstack.org
 ```
 
 ## ファイアウォールの無効化
+
+- 無効化設定 [対象: controller01, compute01]
 
 ```
 # systemctl disable firewalld
@@ -189,9 +198,13 @@ vi /etc/hosts
 
 ## その他確認
 
+- 確認 [対象: controller01, compute01]
+
 ```
+# <正しく設定されていること>
 # hostname
 
+# <LANG=en_US.UTF-8 であること>
 # localectl status
 ========>
 System Locale: LANG=en_US.UTF-8
@@ -199,7 +212,8 @@ System Locale: LANG=en_US.UTF-8
    X11 Layout: jp
 ========<
 
-timedatectl status
+# <Time zone: Asia/Tokyo であること>
+# timedatectl status
 ========>
 Local time: Wed 2016-08-10 17:24:41 JST
 Universal time: Wed 2016-08-10 08:24:41 UTC
@@ -220,8 +234,7 @@ controller01をNTPサーバーとして、その他のノードはcontroller01�
 
 ### NTPサーバー設定
 
-- Chrony インストール 設定
-[対象: controller01 のみ]
+- Chrony インストール 設定 [対象: controller01 のみ]
 
 ```
 # yum -y install chrony
@@ -268,8 +281,7 @@ MS Name/IP address         Stratum Poll Reach LastRx Last sample
 
 ### NTPクライアント設定
 
-- Chrony インストール 設定
-[対象: compute01]
+- Chrony インストール 設定 [対象: compute01]
 
   - 補足: `iburst` オプション:サーバに到達できない場合、ポーリング間隔ごとに、通常のパケット1個の代わりに、パケット8個をバースト的に送信する。これによって、初期化時間を短縮出来る。
 
@@ -319,7 +331,10 @@ chronyd.service   enabled
 
 ## リポジトリ確認
 
-CentOSの場合は、デフォルトで含まれるExtrasにRDO関連のパッケージが含まれている
+CentOSの場合は、デフォルトで含まれるExtrasにRDO関連のパッケージが含まれているが、ReadHatの場合は別途追加が必要
+
+
+- 確認 [対象: controller01, compute01]
 
 ```
 grep -i Extras /etc/yum.repos.d/*
@@ -338,5 +353,3 @@ grep -i Extras /etc/yum.repos.d/*
 /etc/yum.repos.d/CentOS-Vault.repo:name=CentOS-7.1.1503 - Extras
 /etc/yum.repos.d/CentOS-Vault.repo:baseurl=http://vault.centos.org/7.1.1503/extras/$basearch/
 ```
-
-が、ReadHatの場合は、別途追加が必要
