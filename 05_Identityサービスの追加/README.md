@@ -6,7 +6,9 @@ OpenStack Identity サービス(Keystone) は、認証、認可、サービス�
 
 この手順では、コントローラーノードに OpenStack Identity サービス (コード名 keystone) をインストールして設定する。今回は、パフォーマンスを重視し、Apache HTTP サーバーを使ってリクエストを処理し、SQL データベースの代わりに Memcached を使ってトークンを保存する。
 
-## 事前準備  データベース と 管理トークン 作成
+## Identityサービス の インストールと設定
+
+### 事前準備  データベース と 管理トークン 作成
 
 - ログイン [対象: controller01]
 
@@ -103,7 +105,7 @@ Bye
 - 初期設定用トークン作成 [対象: controller01]
 
 ```
-# <ここでは、トークンの代わりにPassword123$とする>
+# <ここでは、ランダムな6真数値の代わりにPassword123$とする>
 # openssl rand -hex 10
 ========>
 Password123$
@@ -111,7 +113,7 @@ Password123$
 ```
 
 
-## コンポーネントのインストール と 設定
+### コンポーネントのインストール と 設定
 
 (注釈) Kilo リリースと Liberty リリースでは、keystone プロジェクトは eventlet を非推奨扱い。代わりに WSGI 拡張に対応した専用 Web サーバーの使用を推奨。この手順では、Apache HTTP server の mod_wsgi を使用して、5000 番ポートと 35357 番ポートで Identity サービスのリクエストを処理する。デフォルトでは、keystone サービスは、 5000 番と 35357 番をリッスンしている。そのため、この手順では、keystone サービスを無効化する。keystone プロジェクトは、Mitaka リリースで eventlet のサポートを削除する予定。
 <!--
@@ -427,7 +429,7 @@ OS reboot したら、No handlers could be found for logger "oslo_config.cfg" �
 ```
 -->
 
-## Apache HTTP Server の設定
+### Apache HTTP Server の設定
 
 - Apacheのホスト名設定(ServerName) [対象: controller01]
 
@@ -509,4 +511,36 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/httpd.service t
 
 
 # systemctl start httpd.service
+```
+
+
+
+## サービスエンティティと API エンドポイントの作成
+
+Identity サービスのデータベースは、初期状態では、認証やカタログサービスの情報を何も持っていない。インストールと設定 セクションにおいて作成した一時認証トークン(openssl rand -hex 10)を使用して、Identity サービスのサービスエンティティーと API エンドポイントを初期化する必要がある。
+
+openstack コマンドの --os-token パラメーターに認証トークンの値を渡すか、OS_TOKEN 環境変数を設定する必要がある。同様に、openstack コマンドの --os-url パラメーターに Identity サービスの URL 値を渡すか、OS_URL 環境変数を設定する必要がある。この手順では、コマンドの長さを短くするため、環境変数を使用する。
+
+### 環境変数設定
+
+- 環境変数設定 [対象: controller01]
+
+export コマンドを直接設定しても良いが、環境構築中にOS再起動した時に、再設定を忘れそうなので、`.bashrc`に記述する
+
+`export OS_TOKEN=Password123$`: 認証トークン、本手順の上部で生成した`openssl rand -hex 10`の値
+
+`export OS_URL=http://controller01:35357/v3`: エンドポイントURL
+
+`export OS_IDENTITY_API_VERSION=3`: Identity APIバージョン
+
+
+```
+vi ~/.bashrc
+========>以下を追加
+export OS_TOKEN=Password123$
+export OS_URL=http://controller01:35357/v3
+export OS_IDENTITY_API_VERSION=3
+========<
+
+source ~/.bashrc
 ```
