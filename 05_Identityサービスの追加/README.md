@@ -100,7 +100,7 @@ Bye
 ```
 
 
-- 初期設定用トークン作成
+- 初期設定用トークン作成 [対象: controller01]
 
 ```
 # <ここでは、トークンの代わりにPassword123$とする>
@@ -115,7 +115,7 @@ Password123$
 
 (注釈) Kilo リリースと Liberty リリースでは、keystone プロジェクトは eventlet を非推奨扱いとしています。代わりに WSGI 拡張に対応した専用 Web サーバーの使用を推奨しています。このガイドでは、Apache HTTP server の mod_wsgi を使用して、5000 番ポートと 35357 番ポートで Identity サービスのリクエストを処理します。デフォルトでは、keystone サービスは、まだ 5000 番と 35357 番をリッスンしています。そのため、このガイドでは、keystone サービスを無効化します。keystone プロジェクトは、Mitaka リリースで eventlet のサポートを削除する予定です。
 
-- コンポーネントのインストール
+- コンポーネントのインストール [対象: controller01]
 
 ```
 # yum install -y openstack-keystone httpd mod_wsgi memcached python-memcached
@@ -160,7 +160,7 @@ Complete!
 ```
 
 
-- memcached の自動起動設定と、起動
+- memcached の自動起動設定と、起動 [対象: controller01]
 
 ```
 # systemctl enable memcached.service
@@ -173,7 +173,7 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/memcached.servi
 ```
 
 
-- keystone の設定
+- keystone の設定 [対象: controller01]
   - 補足：
     - [DEFAULT] セクションに初期管理トークンの値を定義
     - [database] セクションで、データベースのアクセス方法を設定
@@ -209,7 +209,7 @@ verbose = true
 ```
 
 
-- Identyty サービス(keystone)データベースの展開
+- Identyty サービス(keystone)データベースの展開 [対象: controller01]
 
 ```
 ありゃ？？？
@@ -255,9 +255,5 @@ drwxr-x---. 2 keystone keystone 25 Aug 15 17:31 /var/log/keystone/
 ========>
 No handlers could be found for logger "oslo_config.cfg"
 ========<
-
-
-
-
 
 ```
