@@ -1150,10 +1150,220 @@ MariaDB [keystone]>exit
 ```
 
 
+## プロジェクト、ユーザー、ロールの作成
+
+Identity サービスは OpenStack の各サービスに認証サービスを提供する。認証サービスは、ドメイン、プロジェクト(テナント)、ユーザー、ロール を使用する
+
+この手順では、管理用作業用プロジェクト(admin)、サービスプロジェクト(サービス用のプロジェクト？？？？？？novaとか他のサービスを追加したらここに追加するのかな？？？？それとも、、、、)(service)、通常作業用プロジェクト(demo) を作成する
 
 
+- 補足:
+作成したロールは、各 OpenStack サービスの設定ファイルディレクトリーにある policy.json ファイル(例: /etc/keystone/policy.json)に指定されたロールに対応している必要がある。サービスのデフォルトポリシーでは、管理アクセス権が admin ロールに付与されている。
 
 
+- adminプロジェクト の作成
+
+```
+# openstack project create --domain default --description "Admin Project" admin
+========>
++-------------+----------------------------------+
+| Field       | Value                            |
++-------------+----------------------------------+
+| description | Admin Project                    |
+| domain_id   | default                          |
+| enabled     | True                             |
+| id          | 82b03da1f7ed4c1a973f17d9794dd1cb |
+| is_domain   | False                            |
+| name        | admin                            |
+| parent_id   | None                             |
++-------------+----------------------------------+
+========<
+```
+
+
+- adminユーザー の作成
+
+```
+# openstack user create --domain default --password-prompt admin
+========>
+User Password: Password123$          <=== 入力中は表示されない
+Repeat User Password: Password123$   <=== 入力中は表示されない
++-----------+----------------------------------+
+| Field     | Value                            |
++-----------+----------------------------------+
+| domain_id | default                          |
+| enabled   | True                             |
+| id        | f5bc929f63b241b5875b7781d2ca09a3 |
+| name      | admin                            |
++-----------+----------------------------------+
+========<
+```
+
+
+- adminロール の作成
+
+```
+# openstack role create admin
+========>
++-------+----------------------------------+
+| Field | Value                            |
++-------+----------------------------------+
+| id    | 2e9493c1133e4b45b6da6631d96edfdd |
+| name  | admin                            |
++-------+----------------------------------+
+========<
+```
+
+- adminロール を adminプロジェクト と adminユーザー に追加
+
+```
+# openstack role add --project admin --user admin admin
+```
+
+### serviceプロジェクト の作成
+
+```
+# openstack project create --domain default --description "Service Project" service
+========>
++-------------+----------------------------------+
+| Field       | Value                            |
++-------------+----------------------------------+
+| description | Service Project                  |
+| domain_id   | default                          |
+| enabled     | True                             |
+| id          | 35a3a99eead649b98d769bab0f40024f |
+| is_domain   | False                            |
+| name        | service                          |
+| parent_id   | None                             |
++-------------+----------------------------------+
+========<
+```
+
+### 通常作業用、非特権プロジェクト と ユーザー 作成
+
+- demoプロジェクト の作成
+
+```
+# openstack project create --domain default --description "Demo Project" demo
+========>
++-------------+----------------------------------+
+| Field       | Value                            |
++-------------+----------------------------------+
+| description | Demo Project                     |
+| domain_id   | default                          |
+| enabled     | True                             |
+| id          | 94ba3bcd9e804bc1884231667e495c8f |
+| is_domain   | False                            |
+| name        | demo                             |
+| parent_id   | None                             |
++-------------+----------------------------------+
+========<
+```
+
+
+- demoユーザー の作成
+
+```
+# openstack user create --domain default --password-prompt demo
+========>
+User Password:
+Repeat User Password:
++-----------+----------------------------------+
+| Field     | Value                            |
++-----------+----------------------------------+
+| domain_id | default                          |
+| enabled   | True                             |
+| id        | 8fd0d711c2f7480b9bcc2be6800e2fd4 |
+| name      | demo                             |
++-----------+----------------------------------+
+========<
+```
+
+
+- userロール の作成
+
+```
+# openstack role create user
+========>
++-------+----------------------------------+
+| Field | Value                            |
++-------+----------------------------------+
+| id    | f97d83ff82cd4838b489b0cc94313953 |
+| name  | user                             |
++-------+----------------------------------+
+========<
+```
+
+
+- userロール を demoプロジェクト と demoユーザー に追加
+
+```
+openstack role add --project demo --user demo user
+```
+
+
+## 動作確認
+
+### 一時認証トークンの無効化
+
+- 一時認証トークンの無効化
+
+```
+# vi /usr/share/keystone/keystone-dist-paste.ini
+========> 以下を参考に編集
+[pipeline:public_api]、[pipeline:admin_api]、[pipeline:api_v3] セクションから admin_token_auth を削除
+========<
+```
+
+- 環境設定の無効化
+
+```
+# unset OS_TOKEN OS_URL
+
+# vi ~/.bashrc
+========>以下を削除(orコメントアウト)
+# export OS_TOKEN=Password123$
+# export OS_URL=http://controller01:35357/v3
+========<
+```
+
+- admin認証トークン要求 動作確認
+  - 補足：
+    - openstack token issue: トークン発行コマンド
+
+```
+# openstack --os-auth-url http://controller01:35357/v3 --os-project-domain-id default --os-user-domain-id default --os-project-name admin --os-username admin --os-auth-type password token issue
+Password: Password123$  <== 入力中は表示されない adminユーザーのパスワード
+========>
++------------+----------------------------------+
+| Field      | Value                            |
++------------+----------------------------------+
+| expires    | 2016-08-16T06:31:00.846534Z      |
+| id         | 9411f90fbc2947e7aabeba79ffffc4fc |
+| project_id | 82b03da1f7ed4c1a973f17d9794dd1cb |
+| user_id    | f5bc929f63b241b5875b7781d2ca09a3 |
++------------+----------------------------------+
+========<
+```
+
+
+- demo認証トークン要求 動作確認
+  - APIポート5000 は Identityサービスの通常の(非管理)API のみにアクセス可なポート
+
+```
+# openstack --os-auth-url http://controller01:5000/v3 --os-project-domain-id default --os-user-domain-id default --os-project-name demo --os-username demo --os-auth-type password token issue
+========>
+Password: Password123$  <== 入力中は表示されない demoユーザーのパスワード
++------------+----------------------------------+
+| Field      | Value                            |
++------------+----------------------------------+
+| expires    | 2016-08-16T06:33:07.353353Z      |
+| id         | 153206d02ebe4a8e9706290b4c2938df |
+| project_id | 94ba3bcd9e804bc1884231667e495c8f |
+| user_id    | 8fd0d711c2f7480b9bcc2be6800e2fd4 |
++------------+----------------------------------+
+========<
+```
 
 
 <!--
