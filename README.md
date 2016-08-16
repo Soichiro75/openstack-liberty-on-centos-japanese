@@ -3,7 +3,7 @@
 ***この手順は作成中です***
 
 この手順では、
-[OpenStack Docs Liberty Installation Guide for CentOS 7 ](http://docs.openstack.org/liberty/ja/install-guide-rdo/) を参考に、1Controller, 1Compute, 1Cli の構成でOpenStackのPoC環境を構築する
+[OpenStack Docs Liberty Installation Guide for CentOS 7 ](http://docs.openstack.org/liberty/ja/install-guide-rdo/) を参考に、1Controller, 1Compute の構成でOpenStackのPoC環境を構築する
 
 上記ディレクトリの各 README.md を順に行うことでPoC環境構築が出来るようになっている
 
@@ -44,12 +44,12 @@
 
 - 初期構築用 VM:
 
-|   |controller01|compute01|cli01|
-|---|---|---|---|
-|CPU|4 cores|4 cores|1 core|
-|Memory|24 GB|24 GB|512 MB|
-|HDD|200 GB|200 GB|24 GB|
-|Nic|2 nics|2 nics|1 nic|
+|   |controller01|compute01|
+|---|---|---|
+|CPU|4 cores|4 cores|
+|Memory|24 GB|24 GB|
+|HDD|200 GB|200 GB|
+|Nic|2 nics|2 nics|
 
 
 - スケールアウト用 VM:
@@ -68,12 +68,12 @@
 
 コアなサービスと CirrOS のインスタンスをいくつか動かす程度の検証環境(PoC)であれば、以下の最小要件で動作する
 
-|   |controller01|compute01|cli01不要</br>(controller01 or compute01から操作する)|
-|---|---|---|---|
-|CPU|1 core|1 core| - |
-|Memory|4 GB|2 GB| - |
-|HDD|5 GB|10 GB| - |
-|Nic|1 nic|1 nic| - |
+|   |controller01|compute01|
+|---|---|---|
+|CPU|1 core|1 core|
+|Memory|4 GB|2 GB|
+|HDD|5 GB|10 GB|
+|Nic|1 nic|1 nic|
 
 
 ### (仮)構成図 (後できちんと描き直す)
