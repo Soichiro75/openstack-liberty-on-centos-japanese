@@ -554,7 +554,7 @@ export OS_IDENTITY_API_VERSION=3
 
 この後、keystoneのDBに登録していくはず、そのため、事前確認しておきたい
 
-- 事前確認
+- 事前確認 [対象: controller01]
 ```
 # [root@controller01 ~]# mysql -u keystone -h controller01 -p
 
@@ -737,7 +737,7 @@ MariaDB [keystone]>
 -->
 
 
-- Identityサービス用 の サービスエンティティ の作成
+- Identityサービス用 の サービスエンティティ の作成 [対象: controller01]
 
 ```
 # openstack service create --name keystone --description "OpenStack Identity" identity
@@ -880,7 +880,7 @@ MariaDB [keystone]>
 
 -->
 
-- Identityサービス APIエンドポイント の作成
+- Identityサービス APIエンドポイント の作成 [対象: controller01]
 
   - 補足
     - ResionOne: デフォルトのリージョン
@@ -941,7 +941,7 @@ openstack endpoint create --region RegionOne identity admin http://controller01:
 ```
 
 
-- データベースへの登録確認
+- データベースへの登録確認 [対象: controller01]
 
 気になったからテーブル参照しただけ、以下の確認コマンドの実行は必要ないので、飛ばして次に進んでOK
 
