@@ -113,7 +113,11 @@ Password123$
 
 ## コンポーネントのインストール と 設定
 
-(注釈) Kilo リリースと Liberty リリースでは、keystone プロジェクトは eventlet を非推奨扱いとしています。代わりに WSGI 拡張に対応した専用 Web サーバーの使用を推奨しています。このガイドでは、Apache HTTP server の mod_wsgi を使用して、5000 番ポートと 35357 番ポートで Identity サービスのリクエストを処理します。デフォルトでは、keystone サービスは、まだ 5000 番と 35357 番をリッスンしています。そのため、このガイドでは、keystone サービスを無効化します。keystone プロジェクトは、Mitaka リリースで eventlet のサポートを削除する予定です。
+(注釈) Kilo リリースと Liberty リリースでは、keystone プロジェクトは eventlet を非推奨扱い。代わりに WSGI 拡張に対応した専用 Web サーバーの使用を推奨。この手順では、Apache HTTP server の mod_wsgi を使用して、5000 番ポートと 35357 番ポートで Identity サービスのリクエストを処理する。デフォルトでは、keystone サービスは、 5000 番と 35357 番をリッスンしている。そのため、この手順では、keystone サービスを無効化する。keystone プロジェクトは、Mitaka リリースで eventlet のサポートを削除する予定。
+<!--
+keystone の無効化ってどこ？
+-->
+
 
 補足：
  mod_wsgiとは、WSGI (Web Server Gateway Interface) インターフェースに準拠した PythonのプログラムをApache HTTP Serverで動作させるためのモジュールである。
@@ -209,7 +213,7 @@ driver = sql
 ### <以下はオプション>
 ### <この手順では追加しない>
 ### <追加すると、keystone-manage db_sync の時に、>
-### <No handlers could be found for logger "oslo_config.cfg" ってエラーが出る>
+### <No handlers could be found for logger "oslo_config.cfg" ってエラーが出るため>
 [DEFAULT]
 verbose = true
 ========<
