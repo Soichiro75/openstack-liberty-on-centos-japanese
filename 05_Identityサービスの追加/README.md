@@ -535,12 +535,668 @@ export コマンドを直接設定しても良いが、環境構築中にOS再�
 
 
 ```
-vi ~/.bashrc
+# vi ~/.bashrc
 ========>以下を追加
 export OS_TOKEN=Password123$
 export OS_URL=http://controller01:35357/v3
 export OS_IDENTITY_API_VERSION=3
 ========<
 
-source ~/.bashrc
+
+# source ~/.bashrc
 ```
+
+
+### Identityサービス用 サービスエンティティ作成
+
+<!--
+### 自分用メモ
+
+この後、keystoneのDBに登録していくはず、そのため、事前確認しておきたい
+
+- 事前確認
+```
+# [root@controller01 ~]# mysql -u keystone -h controller01 -p
+
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| keystone           |
++--------------------+
+2 rows in set (0.00 sec)
+
+MariaDB [(none)]> use keystone;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+
+
+
+MariaDB [keystone]> show tables;
++------------------------+
+| Tables_in_keystone     |
++------------------------+
+| access_token           |
+| assignment             |
+| config_register        |
+| consumer               |
+| credential             |
+| domain                 |
+| endpoint               |
+| endpoint_group         |
+| federation_protocol    |
+| group                  |
+| id_mapping             |
+| identity_provider      |
+| idp_remote_ids         |
+| mapping                |
+| migrate_version        |
+| policy                 |
+| policy_association     |
+| project                |
+| project_endpoint       |
+| project_endpoint_group |
+| region                 |
+| request_token          |
+| revocation_event       |
+| role                   |
+| sensitive_config       |
+| service                |
+| service_provider       |
+| token                  |
+| trust                  |
+| trust_role             |
+| user                   |
+| user_group_membership  |
+| whitelisted_config     |
++------------------------+
+33 rows in set (0.00 sec)
+
+
+
+
+
+MariaDB [keystone]> select * from access_token;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from assignment;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from config_register;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from consumer;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from credential;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from domain;
++---------+---------+---------+-----------------------------------------------------------------------------------------+
+| id      | name    | enabled | extra                                                                                   |
++---------+---------+---------+-----------------------------------------------------------------------------------------+
+| default | Default |       1 | {"description": "Owns users and tenants (i.e. projects) available on Identity API v2."} |
++---------+---------+---------+-----------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+MariaDB [keystone]> select * from endpoint;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from endpoint_group;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from federation_protocol;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from group;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'group' at line 1
+MariaDB [keystone]> select * from id_mapping;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from identity_provider;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from idp_remote_ids;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from mapping;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from migrate_version;
++-----------------+--------------------------------------------------------------------------------+---------+
+| repository_id   | repository_path                                                                | version |
++-----------------+--------------------------------------------------------------------------------+---------+
+| endpoint_filter | /usr/lib/python2.7/site-packages/keystone/contrib/endpoint_filter/migrate_repo |       2 |
+| endpoint_policy | /usr/lib/python2.7/site-packages/keystone/contrib/endpoint_policy/migrate_repo |       1 |
+| federation      | /usr/lib/python2.7/site-packages/keystone/contrib/federation/migrate_repo      |       8 |
+| keystone        | /usr/lib/python2.7/site-packages/keystone/common/sql/migrate_repo              |      75 |
+| oauth1          | /usr/lib/python2.7/site-packages/keystone/contrib/oauth1/migrate_repo          |       5 |
+| revoke          | /usr/lib/python2.7/site-packages/keystone/contrib/revoke/migrate_repo          |       2 |
++-----------------+--------------------------------------------------------------------------------+---------+
+6 rows in set (0.00 sec)
+
+MariaDB [keystone]> select * from policy;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from policy_association;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from project;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from project_endpoint;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from project_endpoint_group;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from region;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from request_token;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from revocation_event;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from role;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from sensitive_config;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from service;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from service_provider;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from token;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from trust;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from trust_role;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from user;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from user_group_membership;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from whitelisted_config;
+Empty set (0.00 sec)
+
+MariaDB [keystone]>
+```
+-->
+
+
+- Identityサービス用 の サービスエンティティ の作成
+
+```
+# openstack service create --name keystone --description "OpenStack Identity" identity
+========>
++-------------+----------------------------------+
+| Field       | Value                            |
++-------------+----------------------------------+
+| description | OpenStack Identity               |
+| enabled     | True                             |
+| id          | 20ac0030158744a499e0c9b04ba077a5 |
+| name        | keystone                         |
+| type        | identity                         |
++-------------+----------------------------------+
+========<
+```
+
+<!--
+自分メモ
+たしかに、serviceにidentityが追加されている。
+
+MariaDB [keystone]> select * from access_token;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from assignment;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from config_register;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from consumer;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from credential;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from domain;
++---------+---------+---------+-----------------------------------------------------------------------------------------+
+| id      | name    | enabled | extra                                                                                   |
++---------+---------+---------+-----------------------------------------------------------------------------------------+
+| default | Default |       1 | {"description": "Owns users and tenants (i.e. projects) available on Identity API v2."} |
++---------+---------+---------+-----------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+MariaDB [keystone]> select * from endpoint;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from endpoint_group;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from federation_protocol;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from group;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'group' at line 1
+MariaDB [keystone]> select * from id_mapping;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from identity_provider;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from idp_remote_ids;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from mapping;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from migrate_version;
++-----------------+--------------------------------------------------------------------------------+---------+
+| repository_id   | repository_path                                                                | version |
++-----------------+--------------------------------------------------------------------------------+---------+
+| endpoint_filter | /usr/lib/python2.7/site-packages/keystone/contrib/endpoint_filter/migrate_repo |       2 |
+| endpoint_policy | /usr/lib/python2.7/site-packages/keystone/contrib/endpoint_policy/migrate_repo |       1 |
+| federation      | /usr/lib/python2.7/site-packages/keystone/contrib/federation/migrate_repo      |       8 |
+| keystone        | /usr/lib/python2.7/site-packages/keystone/common/sql/migrate_repo              |      75 |
+| oauth1          | /usr/lib/python2.7/site-packages/keystone/contrib/oauth1/migrate_repo          |       5 |
+| revoke          | /usr/lib/python2.7/site-packages/keystone/contrib/revoke/migrate_repo          |       2 |
++-----------------+--------------------------------------------------------------------------------+---------+
+6 rows in set (0.00 sec)
+
+MariaDB [keystone]> select * from policy;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from policy_association;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from project;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from project_endpoint;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from project_endpoint_group;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from region;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from request_token;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from revocation_event;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from role;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from sensitive_config;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from service;
++----------------------------------+----------+---------+-----------------------------------------------------------+
+| id                               | type     | enabled | extra                                                     |
++----------------------------------+----------+---------+-----------------------------------------------------------+
+| 20ac0030158744a499e0c9b04ba077a5 | identity |       1 | {"description": "OpenStack Identity", "name": "keystone"} |
++----------------------------------+----------+---------+-----------------------------------------------------------+
+1 row in set (0.00 sec)
+
+MariaDB [keystone]> select * from service_provider;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from token;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from trust;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from trust_role;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from user;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from user_group_membership;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from whitelisted_config;
+Empty set (0.00 sec)
+
+MariaDB [keystone]>
+
+-->
+
+- Identityサービス APIエンドポイント の作成
+
+  - 補足
+    - ResionOne: デフォルトのリージョン
+
+```
+openstack endpoint create --region RegionOne identity public http://controller01:5000/v2.0
+========>
++--------------+----------------------------------+
+| Field        | Value                            |
++--------------+----------------------------------+
+| enabled      | True                             |
+| id           | ca4c49ed7b934ba489ad58540576e290 |
+| interface    | public                           |
+| region       | RegionOne                        |
+| region_id    | RegionOne                        |
+| service_id   | 20ac0030158744a499e0c9b04ba077a5 |
+| service_name | keystone                         |
+| service_type | identity                         |
+| url          | http://controller01:5000/v2.0    |
++--------------+----------------------------------+
+========<
+
+
+openstack endpoint create --region RegionOne identity internal http://controller01:5000/v2.0
+========>
++--------------+----------------------------------+
+| Field        | Value                            |
++--------------+----------------------------------+
+| enabled      | True                             |
+| id           | 192449e045694288a80d6dd98037b3dc |
+| interface    | internal                         |
+| region       | RegionOne                        |
+| region_id    | RegionOne                        |
+| service_id   | 20ac0030158744a499e0c9b04ba077a5 |
+| service_name | keystone                         |
+| service_type | identity                         |
+| url          | http://controller01:5000/v2.0    |
++--------------+----------------------------------+
+========<
+
+
+openstack endpoint create --region RegionOne identity admin http://controller01:35357/v2.0
+========>
++--------------+----------------------------------+
+| Field        | Value                            |
++--------------+----------------------------------+
+| enabled      | True                             |
+| id           | 44ee326d2e2d473f8613e063f913ab38 |
+| interface    | admin                            |
+| region       | RegionOne                        |
+| region_id    | RegionOne                        |
+| service_id   | 20ac0030158744a499e0c9b04ba077a5 |
+| service_name | keystone                         |
+| service_type | identity                         |
+| url          | http://controller01:35357/v2.0   |
++--------------+----------------------------------+
+========<
+```
+
+
+- データベースへの登録確認
+
+気になったからテーブル参照しただけ、以下の確認コマンドの実行は必要ないので、飛ばして次に進んでOK
+
+
+```
+[root@controller01 ~]# mysql -u keystone -h controller01 -p
+Enter password: Password123$
+
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 11
+Server version: 5.5.50-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2016, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| keystone           |
++--------------------+
+2 rows in set (0.00 sec)
+
+MariaDB [(none)]>
+MariaDB [(none)]> USE keystone;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+MariaDB [keystone]>
+MariaDB [keystone]> SHOW TABLES;
++------------------------+
+| Tables_in_keystone     |
++------------------------+
+| access_token           |
+| assignment             |
+| config_register        |
+| consumer               |
+| credential             |
+| domain                 |
+| endpoint               |
+| endpoint_group         |
+| federation_protocol    |
+| group                  |
+| id_mapping             |
+| identity_provider      |
+| idp_remote_ids         |
+| mapping                |
+| migrate_version        |
+| policy                 |
+| policy_association     |
+| project                |
+| project_endpoint       |
+| project_endpoint_group |
+| region                 |
+| request_token          |
+| revocation_event       |
+| role                   |
+| sensitive_config       |
+| service                |
+| service_provider       |
+| token                  |
+| trust                  |
+| trust_role             |
+| user                   |
+| user_group_membership  |
+| whitelisted_config     |
++------------------------+
+33 rows in set (0.00 sec)
+
+MariaDB [keystone]>
+
+MariaDB [keystone]> select * from access_token;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from assignment;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from config_register;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from consumer;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from credential;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from domain;
++---------+---------+---------+-----------------------------------------------------------------------------------------+
+| id      | name    | enabled | extra                                                                                   |
++---------+---------+---------+-----------------------------------------------------------------------------------------+
+| default | Default |       1 | {"description": "Owns users and tenants (i.e. projects) available on Identity API v2."} |
++---------+---------+---------+-----------------------------------------------------------------------------------------+
+1 row in set (0.00 sec)
+
+MariaDB [keystone]> select * from endpoint;
++----------------------------------+--------------------+-----------+----------------------------------+--------------------------------+-------+---------+-----------+
+| id                               | legacy_endpoint_id | interface | service_id                       | url                            | extra | enabled | region_id |
++----------------------------------+--------------------+-----------+----------------------------------+--------------------------------+-------+---------+-----------+
+| 192449e045694288a80d6dd98037b3dc | NULL               | internal  | 20ac0030158744a499e0c9b04ba077a5 | http://controller01:5000/v2.0  | {}    |       1 | RegionOne |
+| 44ee326d2e2d473f8613e063f913ab38 | NULL               | admin     | 20ac0030158744a499e0c9b04ba077a5 | http://controller01:35357/v2.0 | {}    |       1 | RegionOne |
+| ca4c49ed7b934ba489ad58540576e290 | NULL               | public    | 20ac0030158744a499e0c9b04ba077a5 | http://controller01:5000/v2.0  | {}    |       1 | RegionOne |
++----------------------------------+--------------------+-----------+----------------------------------+--------------------------------+-------+---------+-----------+
+3 rows in set (0.00 sec)
+
+MariaDB [keystone]> select * from endpoint_group;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from federation_protocol;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from group;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'group' at line 1
+MariaDB [keystone]> select * from id_mapping;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from identity_provider;
+Empty set (0.01 sec)
+
+MariaDB [keystone]> select * from idp_remote_ids;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from mapping;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from migrate_version;
++-----------------+--------------------------------------------------------------------------------+---------+
+| repository_id   | repository_path                                                                | version |
++-----------------+--------------------------------------------------------------------------------+---------+
+| endpoint_filter | /usr/lib/python2.7/site-packages/keystone/contrib/endpoint_filter/migrate_repo |       2 |
+| endpoint_policy | /usr/lib/python2.7/site-packages/keystone/contrib/endpoint_policy/migrate_repo |       1 |
+| federation      | /usr/lib/python2.7/site-packages/keystone/contrib/federation/migrate_repo      |       8 |
+| keystone        | /usr/lib/python2.7/site-packages/keystone/common/sql/migrate_repo              |      75 |
+| oauth1          | /usr/lib/python2.7/site-packages/keystone/contrib/oauth1/migrate_repo          |       5 |
+| revoke          | /usr/lib/python2.7/site-packages/keystone/contrib/revoke/migrate_repo          |       2 |
++-----------------+--------------------------------------------------------------------------------+---------+
+6 rows in set (0.00 sec)
+
+MariaDB [keystone]> select * from policy;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from policy_association;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from project;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from project_endpoint;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from project_endpoint_group;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from region;
++-----------+-------------+------------------+-------+
+| id        | description | parent_region_id | extra |
++-----------+-------------+------------------+-------+
+| RegionOne |             | NULL             | {}    |
++-----------+-------------+------------------+-------+
+1 row in set (0.00 sec)
+
+MariaDB [keystone]> select * from request_token;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from revocation_event;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from role;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from sensitive_config;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from service;
++----------------------------------+----------+---------+-----------------------------------------------------------+
+| id                               | type     | enabled | extra                                                     |
++----------------------------------+----------+---------+-----------------------------------------------------------+
+| 20ac0030158744a499e0c9b04ba077a5 | identity |       1 | {"description": "OpenStack Identity", "name": "keystone"} |
++----------------------------------+----------+---------+-----------------------------------------------------------+
+1 row in set (0.00 sec)
+
+MariaDB [keystone]> select * from service_provider;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from token;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from trust;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from trust_role;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from user;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from user_group_membership;
+Empty set (0.00 sec)
+
+MariaDB [keystone]> select * from whitelisted_config;
+Empty set (0.00 sec)
+
+MariaDB [keystone]>exit
+```
+
+
+
+
+
+
+
+
+<!--
+自分用 cmd
+mysql -u keystone -h controller01 -p
+
+show databases;
+
+use keystone;
+
+show tables;
+
+select * from access_token;
+select * from assignment;
+select * from config_register;
+select * from consumer;
+select * from credential;
+select * from domain;
+select * from endpoint;
+select * from endpoint_group;
+select * from federation_protocol;
+select * from group;
+select * from id_mapping;
+select * from identity_provider;
+select * from idp_remote_ids;
+select * from mapping;
+select * from migrate_version;
+select * from policy;
+select * from policy_association;
+select * from project;
+select * from project_endpoint;
+select * from project_endpoint_group;
+select * from region;
+select * from request_token;
+select * from revocation_event;
+select * from role;
+select * from sensitive_config;
+select * from service;
+select * from service_provider;
+select * from token;
+select * from trust;
+select * from trust_role;
+select * from user;
+select * from user_group_membership;
+select * from whitelisted_config;
+-->
