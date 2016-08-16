@@ -6,7 +6,7 @@ OpenStack Identity サービス(Keystone) は、認証、認可、サービス�
 
 この手順では、コントローラーノードに OpenStack Identity サービス (コード名 keystone) をインストールして設定する。今回は、パフォーマンスを重視し、Apache HTTP サーバーを使ってリクエストを処理し、SQL データベースの代わりに Memcached を使ってトークンを保存する。
 
-## データベース と 管理トークン 作成
+## 事前準備  データベース と 管理トークン 作成
 
 - ログイン [対象: controller01]
 
@@ -114,6 +114,10 @@ Password123$
 ## コンポーネントのインストール と 設定
 
 (注釈) Kilo リリースと Liberty リリースでは、keystone プロジェクトは eventlet を非推奨扱いとしています。代わりに WSGI 拡張に対応した専用 Web サーバーの使用を推奨しています。このガイドでは、Apache HTTP server の mod_wsgi を使用して、5000 番ポートと 35357 番ポートで Identity サービスのリクエストを処理します。デフォルトでは、keystone サービスは、まだ 5000 番と 35357 番をリッスンしています。そのため、このガイドでは、keystone サービスを無効化します。keystone プロジェクトは、Mitaka リリースで eventlet のサポートを削除する予定です。
+
+補足：
+ mod_wsgiとは、WSGI (Web Server Gateway Interface) インターフェースに準拠した PythonのプログラムをApache HTTP Serverで動作させるためのモジュールである。
+
 
 - コンポーネントのインストール [対象: controller01]
 
@@ -418,3 +422,87 @@ https://ask.openstack.org/en/question/86471/no-handlers-could-be-found-for-logge
 OS reboot したら、No handlers could be found for logger "oslo_config.cfg" 出なくなった。
 ```
 -->
+
+## Apache HTTP Server の設定
+
+- Apacheのホスト名設定(ServerName) [対象: controller01]
+
+```
+vi /etc/httpd/conf/httpd.conf
+========>以下を参考に 編集
+ServerName controller01
+========<
+```
+
+- mod_wsgiの設定 [対象: controller01]
+
+  - 補足：
+    - mod_wsgi: PythonをApache HTTP Serverで動作させるためのモジュール
+    - /etc/httpd/conf.d/ :Apacheのモジュールの設定ファイル置き場
+
+```
+vi /etc/httpd/conf.d/wsgi-keystone.conf
+========>以下を参考に 新規作成 (特に変更箇所はないはず)
+Listen 5000
+Listen 35357
+
+<VirtualHost *:5000>
+    WSGIDaemonProcess keystone-public processes=5 threads=1 user=keystone group=keystone display-name=%{GROUP}
+    WSGIProcessGroup keystone-public
+    WSGIScriptAlias / /usr/bin/keystone-wsgi-public
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIPassAuthorization On
+    <IfVersion >= 2.4>
+      ErrorLogFormat "%{cu}t %M"
+    </IfVersion>
+    ErrorLog /var/log/httpd/keystone-error.log
+    CustomLog /var/log/httpd/keystone-access.log combined
+
+    <Directory /usr/bin>
+        <IfVersion >= 2.4>
+            Require all granted
+        </IfVersion>
+        <IfVersion < 2.4>
+            Order allow,deny
+            Allow from all
+        </IfVersion>
+    </Directory>
+</VirtualHost>
+
+<VirtualHost *:35357>
+    WSGIDaemonProcess keystone-admin processes=5 threads=1 user=keystone group=keystone display-name=%{GROUP}
+    WSGIProcessGroup keystone-admin
+    WSGIScriptAlias / /usr/bin/keystone-wsgi-admin
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIPassAuthorization On
+    <IfVersion >= 2.4>
+      ErrorLogFormat "%{cu}t %M"
+    </IfVersion>
+    ErrorLog /var/log/httpd/keystone-error.log
+    CustomLog /var/log/httpd/keystone-access.log combined
+
+    <Directory /usr/bin>
+        <IfVersion >= 2.4>
+            Require all granted
+        </IfVersion>
+        <IfVersion < 2.4>
+            Order allow,deny
+            Allow from all
+        </IfVersion>
+    </Directory>
+</VirtualHost>
+========<
+```
+
+
+- Apache の自動起動設定と、起動 [対象: controller01]
+
+```
+# systemctl enable httpd.service
+========>
+Created symlink from /etc/systemd/system/multi-user.target.wants/httpd.service to /usr/lib/systemd/system/httpd.service.
+========<
+
+
+# systemctl start httpd.service
+```
