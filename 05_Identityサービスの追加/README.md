@@ -1161,7 +1161,7 @@ Identity サービスは OpenStack の各サービスに認証サービスを提
 作成したロールは、各 OpenStack サービスの設定ファイルディレクトリーにある policy.json ファイル(例: /etc/keystone/policy.json)に指定されたロールに対応している必要がある。サービスのデフォルトポリシーでは、管理アクセス権が admin ロールに付与されている。
 
 
-- adminプロジェクト の作成
+- adminプロジェクト の作成 [対象: controller01]
 
 ```
 # openstack project create --domain default --description "Admin Project" admin
@@ -1181,7 +1181,7 @@ Identity サービスは OpenStack の各サービスに認証サービスを提
 ```
 
 
-- adminユーザー の作成
+- adminユーザー の作成 [対象: controller01]
 
 ```
 # openstack user create --domain default --password-prompt admin
@@ -1200,7 +1200,7 @@ Repeat User Password: Password123$   <=== 入力中は表示されない
 ```
 
 
-- adminロール の作成
+- adminロール の作成 [対象: controller01]
 
 ```
 # openstack role create admin
@@ -1214,7 +1214,7 @@ Repeat User Password: Password123$   <=== 入力中は表示されない
 ========<
 ```
 
-- adminロール を adminプロジェクト と adminユーザー に追加
+- adminロール を adminプロジェクト と adminユーザー に追加 [対象: controller01]
 
 ```
 # openstack role add --project admin --user admin admin
@@ -1241,7 +1241,7 @@ Repeat User Password: Password123$   <=== 入力中は表示されない
 
 ### 通常作業用、非特権プロジェクト と ユーザー 作成
 
-- demoプロジェクト の作成
+- demoプロジェクト の作成 [対象: controller01]
 
 ```
 # openstack project create --domain default --description "Demo Project" demo
@@ -1261,7 +1261,7 @@ Repeat User Password: Password123$   <=== 入力中は表示されない
 ```
 
 
-- demoユーザー の作成
+- demoユーザー の作成 [対象: controller01]
 
 ```
 # openstack user create --domain default --password-prompt demo
@@ -1280,7 +1280,7 @@ Repeat User Password:
 ```
 
 
-- userロール の作成
+- userロール の作成 [対象: controller01]
 
 ```
 # openstack role create user
@@ -1295,7 +1295,7 @@ Repeat User Password:
 ```
 
 
-- userロール を demoプロジェクト と demoユーザー に追加
+- userロール を demoプロジェクト と demoユーザー に追加 [対象: controller01]
 
 ```
 openstack role add --project demo --user demo user
@@ -1306,7 +1306,7 @@ openstack role add --project demo --user demo user
 
 ### 一時認証トークンの無効化
 
-- 一時認証トークンの無効化
+- 一時認証トークンの無効化 [対象: controller01]
 
 ```
 # vi /usr/share/keystone/keystone-dist-paste.ini
@@ -1315,7 +1315,7 @@ openstack role add --project demo --user demo user
 ========<
 ```
 
-- 環境設定の無効化
+- 環境設定の無効化 [対象: controller01]
 
 ```
 # unset OS_TOKEN OS_URL
@@ -1327,7 +1327,7 @@ openstack role add --project demo --user demo user
 ========<
 ```
 
-- admin認証トークン要求 動作確認
+- admin認証トークン要求 動作確認 [対象: controller01]
   - 補足：
     - openstack token issue: トークン発行コマンド
 
@@ -1347,7 +1347,7 @@ Password: Password123$  <== 入力中は表示されない adminユーザーの�
 ```
 
 
-- demo認証トークン要求 動作確認
+- demo認証トークン要求 動作確認 [対象: controller01]
   - APIポート5000 は Identityサービスの通常の(非管理)API のみにアクセス可なポート
 
 ```
@@ -1376,7 +1376,7 @@ Password: Password123$  <== 入力中は表示されない demoユーザーの�
 
 ### スクリプト作成
 
-- admin用スクリプトの作成
+- admin用スクリプトの作成 [対象: controller01]
 
 ```
 vi ~/admin-openrc.sh
@@ -1392,7 +1392,7 @@ export OS_IDENTITY_API_VERSION=3
 ========<
 ```
 
-- demo用スクリプトの作成
+- demo用スクリプトの作成 [対象: controller01]
 
 ```
 vi ~/demo-openrc.sh
@@ -1413,7 +1413,7 @@ export OS_IDENTITY_API_VERSION=3
 
 特定のプロジェクトとユーザーとしてクライアントを実行する場合には、実行する前に対応するクライアント環境スクリプトを読み込むだけ
 
-- admin用スクリプトの使用
+- admin用スクリプトの使用 [対象: controller01]
 
 ```
 # <スクリプトの読み込み>
@@ -1433,7 +1433,7 @@ export OS_IDENTITY_API_VERSION=3
 ```
 
 
-- demo用スクリプトの使用
+- demo用スクリプトの使用 [対象: controller01]
 
 ```
 # <スクリプトの読み込み>
@@ -1451,49 +1451,3 @@ export OS_IDENTITY_API_VERSION=3
 | user_id    | 8fd0d711c2f7480b9bcc2be6800e2fd4 |
 +------------+----------------------------------+
 ```
-
-
-<!--
-自分用 cmd
-mysql -u keystone -h controller01 -p
-
-show databases;
-
-use keystone;
-
-show tables;
-
-select * from access_token;
-select * from assignment;
-select * from config_register;
-select * from consumer;
-select * from credential;
-select * from domain;
-select * from endpoint;
-select * from endpoint_group;
-select * from federation_protocol;
-select * from group;
-select * from id_mapping;
-select * from identity_provider;
-select * from idp_remote_ids;
-select * from mapping;
-select * from migrate_version;
-select * from policy;
-select * from policy_association;
-select * from project;
-select * from project_endpoint;
-select * from project_endpoint_group;
-select * from region;
-select * from request_token;
-select * from revocation_event;
-select * from role;
-select * from sensitive_config;
-select * from service;
-select * from service_provider;
-select * from token;
-select * from trust;
-select * from trust_role;
-select * from user;
-select * from user_group_membership;
-select * from whitelisted_config;
--->
