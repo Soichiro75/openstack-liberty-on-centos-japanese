@@ -12,6 +12,7 @@ OpenStack Identity サービス(Keystone) は、認証、認可、サービス�
 
 ```
 # mysql -u root -p
+========>
 Enter password: Password123$    <=== 入力中は表示されない
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 2
@@ -22,6 +23,7 @@ Copyright (c) 2000, 2016, Oracle, MariaDB Corporation Ab and others.
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
 MariaDB [(none)]>
+========<
 ```
 
 
@@ -64,7 +66,7 @@ MariaDB [(none)]> SHOW DATABASES;
 
 - keystoneデータベースへのアクセス権設定 [対象: controller01]
   - 補足：
-    - GRANT(権限設定) ALL PRIVILEGES(全ての権限) ON(付与) [データベース名].[テーブル名]\(対象\) [ユーザー]@[ホスト(%:ワイルドカード)] IDENTIFIED BY(ユーザーのパスワード)
+    - GRANT(権限設定) ALL PRIVILEGES(全ての権限) ON(付与) [データベース名].[テーブル名]\(対象\) [ユーザー]@[ホスト(%:ワイルドカード)]\(ユーザー名と接続元ホスト名\) IDENTIFIED BY(ユーザーのパスワード)
 
 ```
 MariaDB [(none)]> GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' IDENTIFIED BY 'Password123$';
