@@ -228,7 +228,7 @@ Enter password: Password123$
 ========<
 
 
-MariaDB [(none)]> show databases;
+MariaDB [(none)]> SHOW DATABASES;
 ========>
 +--------------------+
 | Database           |
@@ -240,10 +240,10 @@ MariaDB [(none)]> show databases;
 ========<
 
 
-MariaDB [(none)]> use keystone;
+MariaDB [(none)]> USE keystone;
 
 
-MariaDB [keystone]> show tables;
+MariaDB [keystone]> SHOW TABLES;
 ========>
 +------------------------+
 | Tables_in_keystone     |
