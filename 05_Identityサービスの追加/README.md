@@ -203,6 +203,9 @@ driver = memcache
 driver = sql
 
 ### <以下はオプション>
+### <この手順では追加しない>
+### <追加すると、keystone-manage db_sync の時に、>
+### <No handlers could be found for logger "oslo_config.cfg" ってエラーが出る>
 [DEFAULT]
 verbose = true
 ========<
@@ -212,7 +215,87 @@ verbose = true
 - Identyty サービス(keystone)データベースの展開 [対象: controller01]
 
 ```
-ありゃ？？？
+# su -s /bin/sh -c "keystone-manage db_sync" keystone
+```
+
+
+- データベース確認 [対象: controller01]
+
+```
+# mysql -u keystone -h controller01 -p
+========>
+Enter password: Password123$
+========<
+
+
+MariaDB [(none)]> show databases;
+========>
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| keystone           |
++--------------------+
+2 rows in set (0.00 sec)
+========<
+
+
+MariaDB [(none)]> use keystone;
+
+
+MariaDB [keystone]> show tables;
+========>
++------------------------+
+| Tables_in_keystone     |
++------------------------+
+| access_token           |
+| assignment             |
+| config_register        |
+| consumer               |
+| credential             |
+| domain                 |
+| endpoint               |
+| endpoint_group         |
+| federation_protocol    |
+| group                  |
+| id_mapping             |
+| identity_provider      |
+| idp_remote_ids         |
+| mapping                |
+| migrate_version        |
+| policy                 |
+| policy_association     |
+| project                |
+| project_endpoint       |
+| project_endpoint_group |
+| region                 |
+| request_token          |
+| revocation_event       |
+| role                   |
+| sensitive_config       |
+| service                |
+| service_provider       |
+| token                  |
+| trust                  |
+| trust_role             |
+| user                   |
+| user_group_membership  |
+| whitelisted_config     |
++------------------------+
+33 rows in set (0.00 sec)
+========<
+
+MariaDB [keystone]>exit
+```
+
+<!--
+```
+[root@controller01 ~]# keystone-manage db_sync keystone
+========>
+No handlers could be found for logger "oslo_config.cfg"
+========<
+↑ コマンド、違う。 su でkeystoneで実行すべき
+
 
 su -s /bin/sh -c "keystone-manage db_sync" keystone
 ========>
@@ -240,20 +323,98 @@ IOError: [Errno 13] Permission denied: '/var/log/keystone/keystone.log'
 ========<
 
 ↑これは、この前に一度rootで実行して、root権限になったから？
+  → その通り。以下、keystone.logを削除して、keystoneユーザーでDBsyncし直したら(ログ作成)、上記 Permission deniedエラーは出なくなった。
 
 
 [root@controller01 ~]# ls -ld /var/log/keystone/
 drwxr-x---. 2 keystone keystone 25 Aug 15 17:31 /var/log/keystone/
-[root@controller01 ~]#
+
 [root@controller01 ~]# ls -ld /var/log/keystone/*
 -rw-r--r--. 1 root root 8881 Aug 15 17:34 /var/log/keystone/keystone.log
-[root@controller01 ~]#
 
+[root@controller01 ~]# mv /var/log/keystone/keystone.log /tmp
 
+[root@controller01 ~]# ls -ld /var/log/keystone/keystone.log
+ls: cannot access /var/log/keystone/keystone.log: No such file or directory
 
-[root@controller01 ~]# keystone-manage db_sync keystone
-========>
+[root@controller01 ~]# su -s /bin/sh -c "keystone-manage db_sync" keystone
 No handlers could be found for logger "oslo_config.cfg"
-========<
 
+[root@controller01 ~]# ls -ld /var/log/keystone/keystone.log
+-rw-r--r--. 1 keystone keystone 0 Aug 16 09:36 /var/log/keystone/keystone.log
+
+
+
+No handlers could be found for logger "oslo_config.cfg"
+ってなに？？？？？？？？？？？？
+
+
+
+[root@controller01 ~]# mysql -u keystone -h controller01 -p
+Enter password: Password123$
+
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| keystone           |
++--------------------+
+2 rows in set (0.00 sec)
+
+MariaDB [(none)]>
+
+
+データベースは出来ているみたい。
+
+MariaDB [(none)]> use keystone;
+
+MariaDB [keystone]> show tables;
++------------------------+
+| Tables_in_keystone     |
++------------------------+
+| access_token           |
+| assignment             |
+| config_register        |
+| consumer               |
+| credential             |
+| domain                 |
+| endpoint               |
+| endpoint_group         |
+| federation_protocol    |
+| group                  |
+| id_mapping             |
+| identity_provider      |
+| idp_remote_ids         |
+| mapping                |
+| migrate_version        |
+| policy                 |
+| policy_association     |
+| project                |
+| project_endpoint       |
+| project_endpoint_group |
+| region                 |
+| request_token          |
+| revocation_event       |
+| role                   |
+| sensitive_config       |
+| service                |
+| service_provider       |
+| token                  |
+| trust                  |
+| trust_role             |
+| user                   |
+| user_group_membership  |
+| whitelisted_config     |
++------------------------+
+33 rows in set (0.00 sec)
+
+MariaDB [keystone]>
+
+
+見つけた！
+https://ask.openstack.org/en/question/86471/no-handlers-could-be-found-for-logger-oslo_configcfg/
+"verbose" の設定を  "/etc/keystone/keystone.conf" から削除してから、
+OS reboot したら、No handlers could be found for logger "oslo_config.cfg" 出なくなった。
 ```
+-->
