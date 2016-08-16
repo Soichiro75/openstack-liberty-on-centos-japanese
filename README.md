@@ -2,6 +2,7 @@
 
 ***この手順は作成中です***
 
+
 この手順では、
 [OpenStack Docs Liberty Installation Guide for CentOS 7 ](http://docs.openstack.org/liberty/ja/install-guide-rdo/) を参考に、1Controller, 1Compute の構成でOpenStackのPoC環境を構築する
 
@@ -21,6 +22,9 @@
   - [(参考資料)OpenStackで使用するパスワードについて](http://docs.openstack.org/liberty/ja/install-guide-rdo/environment-security.html)
 
 
+自分用メモ:
+
+パスワードは`Password123$`より、`PasswordAdmin`,`PasswordDemo`,`PasswordToken`みたいにした方が分かりやすかったかな。。。。。。
 
 
 ## 参考URL
