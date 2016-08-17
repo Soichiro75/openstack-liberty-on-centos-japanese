@@ -115,3 +115,5 @@ vhv.enable = "TRUE"
     - [プロミスキャスモード](https://ja.wikipedia.org/wiki/プロミスキャス・モード):プロミスキャス・モード (promiscuous mode)とは、コンピュータ・ネットワークのネットワークカードが持つ動作モードの一つである。「プロミスキャス」は「無差別の」という意味を持ち、自分宛のデータパケットでない信号も取り込んで処理をすることを示す。
 
 <img src="https://github.com/Soichiro75/openstack-liberty-on-centos-japanese/blob/master/01_ESXi事前準備/images/2016-08-09_020_プロミスキャス(無差別)モード.png" width="320px" title="プロミスキャス(無差別)モード">
+
+- ESXiホストの再起動

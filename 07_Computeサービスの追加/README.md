@@ -589,8 +589,13 @@ ESXiの/etc/vmware/configに「vhv.enable = “TRUE”」
 もしないといけないのかな？？？
 
 
+```
 
-このコマンドが 0 を返す場合、お使いのコンピュートノードはハードウェア支援機能をサポートしていません。libvirt が KVM の代わりに QEMU を使用するように設定する必要があります。
+
+- (実施の必要なし)
+
+```
+上記のコマンドが 0 を返す場合、お使いのコンピュートノードはハードウェア支援機能をサポートしていません。libvirt が KVM の代わりに QEMU を使用するように設定する必要があります。
 
 /etc/nova/nova.conf ファイルの [libvirt] セクションを以下のように編集します。
 
@@ -598,4 +603,11 @@ ESXiの/etc/vmware/configに「vhv.enable = “TRUE”」
 ...
 virt_type = qemu
 
+```
+
+### Computeサービスの自動起動設定 と 起動
+
+```
+# systemctl enable libvirtd.service openstack-nova-compute.service
+# systemctl start libvirtd.service openstack-nova-compute.service
 ```
