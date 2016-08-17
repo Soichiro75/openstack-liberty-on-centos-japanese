@@ -89,6 +89,25 @@ OpenStack on ESXi とするための、ESXi事前準備をする
 
 ### Nested 設定
 
+- 以下を参考に、ssh,esxiシェル有効化
+  - vClientでESXiにログイン > 192.168.101.1 > 構成 > セキュリティプロファイル > サービス/プロパティ > ESXiシェル > オプション > 「開始」をクリック > 「ホストに連動して~」にチェック > OK
+  - vClientでESXiにログイン > 192.168.101.1 > 構成 > セキュリティプロファイル > サービス/プロパティ > SSH > オプション > 「開始」をクリック > 「ホストに連動して~」にチェック > OK
+
+- 操作PCのTeratermでESXiにログインし、以下を実施
+
+```
+# vi /etc/vmware/config
+========> 以下のように、vhv.enable = "TRUE" を追加する
+libdir = "/usr/lib/vmware"
+authd.proxy.nfc = "vmware-hostd:ha-nfc"
+authd.proxy.nfcssl = "vmware-hostd:ha-nfcssl"
+authd.proxy.vpxa-nfcssl = "vmware-vpxa:vpxa-nfcssl"
+authd.proxy.vpxa-nfc = "vmware-vpxa:vpxa-nfc"
+authd.fullpath = "/sbin/authd"
+vhv.enable = "TRUE"
+========<
+```
+
 - 以下を参考に`VM Network 101`と`VM Network 102`両ポートグループに、`プロミスキャス(無差別)モード 承諾`(OpenStack上のVMと通信をとれるようにするため)を設定
 
   - 192.168.101.1 ホスト選択 > 構成 > ハードウェア/ネットワーク > vSwitch(0 or 1)/プロパティ > VM Network (101 or 102) 編集 > セキュリティ/無差別モード 承諾

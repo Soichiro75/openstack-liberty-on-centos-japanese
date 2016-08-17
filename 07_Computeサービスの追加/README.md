@@ -475,9 +475,127 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/openstack-nova-
 
 ## コンポーネントのインストール と 設定 (コンピュートノード)
 
+上記、コントローラーノードでの作業
+
+以下、コンピュートノードでの作業
+
+KVM 拡張を持つ QEMU ハイパーバイザーを使用
+
 ### パッケージのインストール (コンピュートノード)
 
 - インストール [対象: compute01]
 ```
-aaa
+# yum install -y openstack-nova-compute sysfsutils
+========>
+Installed:
+  openstack-nova-compute.noarch 1:12.0.4-1.el7                          sysfsutils.x86_64 0:2.1.0-16.el7
+
+Dependency Installed:
+  MySQL-python.x86_64 0:1.2.3-11.el7                               OpenIPMI-modalias.x86_64 0:2.0.19-11.el7
+  attr.x86_64 0:2.4.46-12.el7                                      augeas-libs.x86_64 0:1.4.0-2.el7
+  (省略)
+  syslinux.x86_64 0:4.05-12.el7                                    syslinux-extlinux.x86_64 0:4.05-12.el7
+  tcp_wrappers.x86_64 0:7.6-77.el7                                 unbound-libs.x86_64 0:1.4.20-26.el7
+  urw-fonts.noarch 0:2.4-16.el7                                    usbredir.x86_64 0:0.6-7.el7
+  xorg-x11-font-utils.x86_64 1:7.5-20.el7                          yajl.x86_64 0:2.0.4-4.el7
+  yum-utils.noarch 0:1.1.31-34.el7
+
+Complete!
+========<
+```
+
+### 設定
+
+- `nova.conf`の設定 [対象: compute01]
+  - 補足：
+    - [DEFAULT] と [oslo_messaging_rabbit] セクションに、RabbitMQ メッセージキューのアクセス方法を設定
+    - [DEFAULT] セクションと [keystone_authtoken] セクションに、Identity サービスへのアクセス方法を設定
+    - [DEFAULT] セクションに my_ip オプションを設定
+    - [DEFAULT] セクションで、Networking サービスのサポートを有効
+      - デフォルトで、Compute は組み込みのファイアウォールサービスを使用する。Networking サービスがファイアウォールサービスを提供するため、nova.virt.firewall.NoopFirewallDriver ファイアウォールドライバーを使用して、Compute のファイアウォールサービスを無効化する必要がある。
+    - [vnc] セクションで、リモートコンソールアクセスを有効化
+      - サーバーコンポーネントは、すべての IP アドレスをリッスンする。プロキシーコンポーネントはコンピュートノードの管理インターフェースの IP アドレスのみをリッスンする。ベース URL は、Web ブラウザーがこのコンピュートノードにあるインスタンスのリモートコンソールにアクセスするための場所を示す。
+    - [glance] セクションに、Image service の場所を設定
+    - [oslo_concurrency] セクションにロックパスを設定
+    - (オプション) トラブルシューティングしやすくするために、冗長ロギングを [DEFAULT] セクションで有効化
+
+```
+# vi /etc/nova/nova.conf
+========>
+[DEFAULT]
+rpc_backend = rabbit
+
+[oslo_messaging_rabbit]
+rabbit_host = controller01
+rabbit_userid = openstack
+rabbit_password = Password123$
+
+[DEFAULT]
+auth_strategy = keystone
+
+[keystone_authtoken]
+auth_uri = http://controller01:5000
+auth_url = http://controller01:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = nova
+password = Password123$
+
+[DEFAULT]
+my_ip = 192.168.101.21
+
+[DEFAULT]
+network_api_class = nova.network.neutronv2.api.API
+security_group_api = neutron
+linuxnet_interface_driver = nova.network.linux_net.NeutronLinuxBridgeInterfaceDriver
+firewall_driver = nova.virt.firewall.NoopFirewallDriver
+
+[vnc]
+enabled = true
+vncserver_listen = 0.0.0.0
+vncserver_proxyclient_address = $my_ip
+novncproxy_base_url = http://controller01:6080/vnc_auto.html
+
+[glance]
+host = controller01
+
+[oslo_concurrency]
+lock_path = /var/lib/nova/tmp
+
+# <以下オプション>
+# <本手順では追加しない>
+[DEFAULT]
+verbose = True
+========<
+```
+
+### 仮想マシンハードウェア支援機能サポートの確認
+
+- コンピュートノードの仮想マシンハードウェア支援機能サポートの確認 [対象: compute01]
+
+```
+# <1以上の数を返すこと>
+# egrep -c '(vmx|svm)' /proc/cpuinfo
+========>
+0
+========<
+
+ありゃ？？？？
+ESXiの設定を見直そう。。。。
+
+ESXiの/etc/vmware/configに「vhv.enable = “TRUE”」
+もしないといけないのかな？？？
+
+
+
+このコマンドが 0 を返す場合、お使いのコンピュートノードはハードウェア支援機能をサポートしていません。libvirt が KVM の代わりに QEMU を使用するように設定する必要があります。
+
+/etc/nova/nova.conf ファイルの [libvirt] セクションを以下のように編集します。
+
+[libvirt]
+...
+virt_type = qemu
+
 ```
