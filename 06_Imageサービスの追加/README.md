@@ -153,20 +153,20 @@ adminロールを glanceユーザーと serviceプロジェクト に追加す�
 ========<
 
 
-# openstack endpoint create --region RegionOne image admin http://controller:9292
+# openstack endpoint create --region RegionOne image admin http://controller01:9292
 ========>
 +--------------+----------------------------------+
 | Field        | Value                            |
 +--------------+----------------------------------+
 | enabled      | True                             |
-| id           | 7066883e023e491c896697a4441a0344 |
+| id           | e13401d6dd54477b9e9964812f2f3207 |
 | interface    | admin                            |
 | region       | RegionOne                        |
 | region_id    | RegionOne                        |
 | service_id   | 8d6812e182e64c13a7149e9181c1509e |
 | service_name | glance                           |
 | service_type | image                            |
-| url          | http://controller:9292           |
+| url          | http://controller01:9292         |
 +--------------+----------------------------------+
 ========<
 ```
@@ -209,7 +209,7 @@ Complete!
 # vi /etc/glance/glance-api.conf
 ========> 以下を参考に編集
 [database]
-connection = mysql://glance:Password123$@controller/glance
+connection = mysql://glance:Password123$@controller01/glance
 
 [keystone_authtoken]
 auth_uri = http://controller01:5000
@@ -304,6 +304,8 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/openstack-glanc
 
 - 確認 [対象: controller01]
 
+
+<!--
 ```
 [root@controller01 ~]# mysql -u glance -h controller01 -p
 Enter password: Password123$  <== 入力中は表示されない
@@ -335,6 +337,68 @@ Empty set (0.00 sec)
 ありゃ？
 空でいいんだっけ？？？
 あぁ、、、、何も登録してないか、、、、、。
+
+いや、ダメ！
+apiのURL間違えてて、うまく反映されていなかったみたい！
+
+```
+-->
+
+```
+[root@controller01 ~]# mysql -u glance -h controller01 -p
+Enter password: Password123$
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 8
+Server version: 5.5.50-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2016, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+
+MariaDB [(none)]> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| glance             |
++--------------------+
+2 rows in set (0.00 sec)
+
+
+MariaDB [(none)]> USE glance;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+MariaDB [glance]> SHOW TABLES;
++----------------------------------+
+| Tables_in_glance                 |
++----------------------------------+
+| artifact_blob_locations          |
+| artifact_blobs                   |
+| artifact_dependencies            |
+| artifact_properties              |
+| artifact_tags                    |
+| artifacts                        |
+| image_locations                  |
+| image_members                    |
+| image_properties                 |
+| image_tags                       |
+| images                           |
+| metadef_namespace_resource_types |
+| metadef_namespaces               |
+| metadef_objects                  |
+| metadef_properties               |
+| metadef_resource_types           |
+| metadef_tags                     |
+| migrate_version                  |
+| task_info                        |
+| tasks                            |
++----------------------------------+
+20 rows in set (0.00 sec)
+
+MariaDB [glance]>exit
 ```
 
 
@@ -379,7 +443,20 @@ Complete!
 
 ダウンロードしたイメージを、 QCOW2 ディスク形式、bare コンテナー形式、パブリック公開で Image service にアップロードする。パブリック公開を指定すると、すべてのプロジェクトがこのイメージにアクセス出来る。
 
+
+
+
+<!--
+
+- トラブルシュート
+
 ```
+
+- イメージのアップロード
+
+ダウンロードしたイメージを、 QCOW2 ディスク形式、bare コンテナー形式、パブリック公開で Image service にアップロードする。パブリック公開を指定すると、すべてのプロジェクトがこのイメージにアクセス出来る。
+
+
 # glance image-create --name "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --visibility public --progress
 
 ========>
@@ -388,4 +465,254 @@ Complete!
 
 ありゃ？？？？
 
+
+
+
+
+MariaDB [keystone]> select * from endpoint;
++----------------------------------+--------------------+-----------+----------------------------------+--------------------------------+-------+---------+-----------+
+| id                               | legacy_endpoint_id | interface | service_id                       | url                            | extra | enabled | region_id |
++----------------------------------+--------------------+-----------+----------------------------------+--------------------------------+-------+---------+-----------+
+| 192449e045694288a80d6dd98037b3dc | NULL               | internal  | 20ac0030158744a499e0c9b04ba077a5 | http://controller01:5000/v2.0  | {}    |       1 | RegionOne |
+| 24ea67411d524130a35cc1d5c583383b | NULL               | public    | 8d6812e182e64c13a7149e9181c1509e | http://controller01:9292       | {}    |       1 | RegionOne |
+| 44ee326d2e2d473f8613e063f913ab38 | NULL               | admin     | 20ac0030158744a499e0c9b04ba077a5 | http://controller01:35357/v2.0 | {}    |       1 | RegionOne |
+| 7066883e023e491c896697a4441a0344 | NULL               | admin     | 8d6812e182e64c13a7149e9181c1509e | http://controller:9292         | {}    |       1 | RegionOne |
+| c852c160ac484c47843b1e636b0878f5 | NULL               | internal  | 8d6812e182e64c13a7149e9181c1509e | http://controller01:9292       | {}    |       1 | RegionOne |
+| ca4c49ed7b934ba489ad58540576e290 | NULL               | public    | 20ac0030158744a499e0c9b04ba077a5 | http://controller01:5000/v2.0  | {}    |       1 | RegionOne |
++----------------------------------+--------------------+-----------+----------------------------------+--------------------------------+-------+---------+-----------+
+6 rows in set (0.00 sec)
+
+MariaDB [keystone]>
+
+Image の adminエンドポイント
+http://controller:9292  がURL間違っている。
+正しくは、http://controller01:9292
+
+って事で、間違いの削除
+[root@controller01 ~]# openstack endpoint delete 7066883e023e491c896697a4441a0344
+
+で、正しいの追加
+openstack endpoint create --region RegionOne image admin http://controller01:9292
+========>
++--------------+----------------------------------+
+| Field        | Value                            |
++--------------+----------------------------------+
+| enabled      | True                             |
+| id           | e13401d6dd54477b9e9964812f2f3207 |
+| interface    | admin                            |
+| region       | RegionOne                        |
+| region_id    | RegionOne                        |
+| service_id   | 8d6812e182e64c13a7149e9181c1509e |
+| service_name | glance                           |
+| service_type | image                            |
+| url          | http://controller01:9292         |
++--------------+----------------------------------+
+========<
+
+
+
+リトライ
+# glance image-create --name "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --visibility public --progress
+========>
+500 Internal Server Error: The server has either erred or is incapable of performing the requested operation. (HTTP 500)
+========<
+
+
+また、失敗、、、、、、。
+
+
+cat /var/log/glance/api.log
+========>
+2016-08-17 10:00:16.936 8487 ERROR glance.common.wsgi [req-80a7cb75-9a66-4cac-8b11-b46caa837db9 f5bc929f63b241b5875b7781d2ca09a3 82b03da1f7ed4c1a973f17d9794dd1cb - - -] Caught error: (_mysql_exceptions.OperationalError) (2005, "Unknown MySQL server host 'controller' (0)")
+
+2016-08-17 10:00:16.936 8487 ERROR glance.common.wsgi OperationalError: (_mysql_exceptions.OperationalError) (2005, "Unknown MySQL server host 'controller' (0)")
+========<
+あぁ、controllerが残っている。。。。。
+
+
+うーーーんと、
+glanceを再起動。
+[root@controller01 ~]# openstack-service list
+========>
+openstack-glance-api
+openstack-glance-registry
+========<
+[root@controller01 ~]# openstack-service restart openstack-glance-registry
+[root@controller01 ~]# openstack-service restart openstack-glance-api
+
+
+
+リトライ
+[root@controller01 ~]# glance image-create --name "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --visibility public --progress
+========>
+500 Internal Server Error: The server has either erred or is incapable of performing the requested operation. (HTTP 500)
+========<
+失敗、、、、、、。
+
+cat /var/log/glance/api.log
+========>
+2016-08-17 10:14:36.314 31140 ERROR glance.common.wsgi OperationalError: (_mysql_exceptions.OperationalError) (2005, "Unknown MySQL server host 'controller' (0)")
+2016-08-17 10:14:36.314 31140 ERROR glance.common.wsgi
+2016-08-17 10:14:36.329 31140 INFO eventlet.wsgi.server [req-d1930fcb-24df-45b2-9856-f2434ae6c617 f5bc929f63b241b5875b7781d2ca09a3 82b03da1f7ed4c1a973f17d9794dd1cb - - -] 192.168.101.11 - - [17/Aug/2016 10:14:36] "POST /v2/images HTTP/1.1" 500 454 0.115882
+========<
+
+
+うーーん、OS、reboot。
+
+あ！エラーの通り、接続先SQLのURL間違ってるじゃん！
+[root@controller01 ~]# cat /etc/glance/glance-api.conf | grep controller
+========>
+connection = mysql://glance:Password123$@controller/glance
+auth_uri = http://controller01:5000
+auth_url = http://controller01:35357
+========<
+
+修正
+[root@controller01 ~]# vi /etc/glance/glance-api.conf | grep controller
+========>
+connection = mysql://glance:Password123$@controller01/glance
+
+データベースへの展開
+[root@controller01 ~]# su -s /bin/sh -c "glance-manage db_sync" glance
+========>
+No handlers could be found for logger "oslo_config.cfg"
+========<
+
+
+リトライ
+[root@controller01 ~]# glance image-create --name "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --visibility public --progress
+========>
+500 Internal Server Error: The server has either erred or is incapable of performing the requested operation. (HTTP 500)
+========<
+
+失敗、、、、、、、。
+
+
+でも、glanceのデータベースにテーブル出来た!
+
+
+[root@controller01 ~]# mysql -u glance -h controller01 -p
+Enter password:
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 8
+Server version: 5.5.50-MariaDB MariaDB Server
+
+Copyright (c) 2000, 2016, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> show tables;
+ERROR 1046 (3D000): No database selected
+MariaDB [(none)]>
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| glance             |
++--------------------+
+2 rows in set (0.00 sec)
+
+MariaDB [(none)]>
+MariaDB [(none)]> use glance;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+MariaDB [glance]> show tables;
++----------------------------------+
+| Tables_in_glance                 |
++----------------------------------+
+| artifact_blob_locations          |
+| artifact_blobs                   |
+| artifact_dependencies            |
+| artifact_properties              |
+| artifact_tags                    |
+| artifacts                        |
+| image_locations                  |
+| image_members                    |
+| image_properties                 |
+| image_tags                       |
+| images                           |
+| metadef_namespace_resource_types |
+| metadef_namespaces               |
+| metadef_objects                  |
+| metadef_properties               |
+| metadef_resource_types           |
+| metadef_tags                     |
+| migrate_version                  |
+| task_info                        |
+| tasks                            |
++----------------------------------+
+20 rows in set (0.00 sec)
+
+MariaDB [glance]>
+
+
+
+
+ってことはglanceの再起動すれば、うまくいくかな？
+[root@controller01 ~]# systemctl restart openstack-glance-api.service openstack-glance-registry.service
+
+
+リトライ
+
+[root@controller01 ~]# glance image-create --name "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --visibility public --progress
+[=============================>] 100%
++------------------+--------------------------------------+
+| Property         | Value                                |
++------------------+--------------------------------------+
+| checksum         | ee1eca47dc88f4879d8a229cc70a07c6     |
+| container_format | bare                                 |
+| created_at       | 2016-08-17T01:29:10Z                 |
+| disk_format      | qcow2                                |
+| id               | da47a8b1-4fc7-44cc-b27c-d41ff5d88d7c |
+| min_disk         | 0                                    |
+| min_ram          | 0                                    |
+| name             | cirros                               |
+| owner            | 82b03da1f7ed4c1a973f17d9794dd1cb     |
+| protected        | False                                |
+| size             | 13287936                             |
+| status           | active                               |
+| tags             | []                                   |
+| updated_at       | 2016-08-17T01:29:11Z                 |
+| virtual_size     | None                                 |
+| visibility       | public                               |
++------------------+--------------------------------------+
+[root@controller01 ~]#
+
+
+キタ！！！！！
+成功！
+
+```
+
+-->
+
+
+```
+# glance image-create --name "cirros" --file cirros-0.3.4-x86_64-disk.img --disk-format qcow2 --container-format bare --visibility public --progress
+========>
+[=============================>] 100%
++------------------+--------------------------------------+
+| Property         | Value                                |
++------------------+--------------------------------------+
+| checksum         | ee1eca47dc88f4879d8a229cc70a07c6     |
+| container_format | bare                                 |
+| created_at       | 2016-08-17T01:29:10Z                 |
+| disk_format      | qcow2                                |
+| id               | da47a8b1-4fc7-44cc-b27c-d41ff5d88d7c |
+| min_disk         | 0                                    |
+| min_ram          | 0                                    |
+| name             | cirros                               |
+| owner            | 82b03da1f7ed4c1a973f17d9794dd1cb     |
+| protected        | False                                |
+| size             | 13287936                             |
+| status           | active                               |
+| tags             | []                                   |
+| updated_at       | 2016-08-17T01:29:11Z                 |
+| virtual_size     | None                                 |
+| visibility       | public                               |
++------------------+--------------------------------------+
+========<
 ```
