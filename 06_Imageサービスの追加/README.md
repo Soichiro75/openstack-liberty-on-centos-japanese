@@ -69,7 +69,9 @@ source ~/admin-openrc.sh
 ```
 
 
-- サービスクレデンシャルの作成 [対象: controller01]
+### サービスクレデンシャルの作成
+
+- ユーザー作成 [対象: controller01]
 
 ```
 # openstack user create --domain default --password-prompt glance
@@ -205,7 +207,7 @@ Complete!
 
 ### 設定
 
-- 設定 glance-api.conf [対象: controller01]
+- `glance-api.conf`の設定 [対象: controller01]
 
 ```
 # vi /etc/glance/glance-api.conf
@@ -242,7 +244,7 @@ verbose = True
 ```
 
 
-- 設定 glance-registry.conf [対象: controller01]
+- `glance-registry.conf`の設定 [対象: controller01]
 
 ```
 # vi /etc/glance/glance-registry.conf
