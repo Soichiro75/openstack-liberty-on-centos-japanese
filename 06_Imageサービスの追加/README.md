@@ -1,5 +1,7 @@
 # Imageサービスの追加
 
+http://docs.openstack.org/liberty/ja/install-guide-rdo/glance.html
+
 OpenStack Image service (glance) により、ユーザーが仮想マシンイメージを検索、登録、取得できるようになる。 REST API が提供され、仮想マシンイメージメタデータを問い合わせり、実際のイメージを取得したり出来る。 Image service 経由で利用可能な仮想マシンイメージは、単なるファイルシステムから OpenStack Object Storage(swift) のようなオブジェクトストレージシステムまで、さまざまな場所に保存出来る。
 
 この手順では Image service が `file` バックエンドを使用するよう設定する。この場合、Image service が動作しているコントローラーノード上のディレクトリー(/var/lib/glance/images/)にイメージがアップロードされ保存される。

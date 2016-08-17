@@ -1,5 +1,7 @@
 # OS事前準備
 
+http://docs.openstack.org/liberty/ja/install-guide-rdo/environment.html
+
 ネットワーク設定、DNS(今回はhosts)、NTP、yumリボジトリ、OpenStackのパッケージインストール 等を設定する
 
 

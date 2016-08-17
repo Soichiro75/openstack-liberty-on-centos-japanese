@@ -1,5 +1,7 @@
 # OSインストール
 
+http://docs.openstack.org/liberty/ja/install-guide-rdo/environment.html
+
 OpenStackの controller01 と compute01 用のVMとなるCentOS7 をインストールする
 
 
