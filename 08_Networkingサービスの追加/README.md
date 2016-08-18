@@ -653,3 +653,15 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/neutron-l3-agen
 # <本手順では、セルフサービスネットワーク のため、以下も実施>
 # systemctl start neutron-l3-agent.service
 ```
+
+</br>
+</br>
+</br>
+</br>
+</br>
+
+***
+
+## コンポーネントのインストール
+
+以下、コンピュートノードで実施

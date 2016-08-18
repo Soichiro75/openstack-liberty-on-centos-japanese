@@ -471,7 +471,13 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/openstack-nova-
 # systemctl start openstack-nova-api.service openstack-nova-cert.service openstack-nova-consoleauth.service openstack-nova-scheduler.service openstack-nova-conductor.service openstack-nova-novncproxy.service
 ```
 
+</br>
+</br>
+</br>
+</br>
+</br>
 
+***
 
 ## コンポーネントのインストール と 設定 (コンピュートノード)
 
@@ -633,7 +639,13 @@ Created symlink from xxxxx
 
 # systemctl start libvirtd.service openstack-nova-compute.service
 ```
+</br>
+</br>
+</br>
+</br>
+</br>
 
+***
 
 ## 動作確認
 
@@ -641,7 +653,7 @@ Created symlink from xxxxx
 
 ### 管理者専用 CLI コマンドへのアクセス権読み込み
 
-- admin クレデンシャルを読み込む
+- admin クレデンシャルを読み込む [対象: controller01]
 
 ```
 # source admin-openrc.sh
@@ -649,7 +661,7 @@ Created symlink from xxxxx
 
 ### プロセス確認
 
-- 各プロセスの起動と登録確認
+- 各プロセスの起動と登録確認 [対象: controller01]
   - 補足:
     - nova-consoleauth デーモン: コンソールプロキシーがユーザーに対して提供したトークンを認証する
     - nova-cert デーモン: x509 証明書
@@ -676,7 +688,7 @@ Created symlink from xxxxx
 
 ### Identity サービスへの接続 確認
 
-- Identity サービスの API エンドポイントを一覧表示して、Identity サービスへの接続を確認
+- Identity サービスの API エンドポイントを一覧表示して、Identity サービスへの接続を確認 [対象: controller01]
   - WARNINGが表示されるが、この時点では無視して良い
     - 因みに、`export OS_REGION_NAME=RegionOne` すれば、WARNINGは表示されなくなるが、実施しない
 
@@ -806,7 +818,7 @@ WARNING: nova has no endpoint in ! Available endpoints for this service:
 
 ### Image service への接続 確認
 
-- イメージサービスカタログにあるイメージを一覧表示して、Image service への接続を確認
+- イメージサービスカタログにあるイメージを一覧表示して、Image service への接続を確認 [対象: controller01]
 
 ```
 # nova image-list
