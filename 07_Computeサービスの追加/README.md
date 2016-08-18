@@ -679,6 +679,7 @@ Created symlink from xxxxx
 - Identity サービスの API エンドポイントを一覧表示して、Identity サービスへの接続を確認
   - WARNINGが表示されるが、この時点では無視して良い
     - `export OS_REGION_NAME=RegionOne` すれば、WARNINGは表示されなくなる
+
 <!--
 けど、なぜか少ない、、、、、。
 [root@controller01 ~]# nova endpoints
