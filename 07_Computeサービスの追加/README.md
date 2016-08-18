@@ -627,6 +627,8 @@ virt_type = qemu
 ```
 # systemctl enable libvirtd.service openstack-nova-compute.service
 ========>
+Created symlink from xxxxx
+Created symlink from xxxxx
 ========<
 
 # systemctl start libvirtd.service openstack-nova-compute.service
