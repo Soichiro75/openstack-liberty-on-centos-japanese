@@ -63,7 +63,7 @@ Bye
 管理者専用 CLI コマンドへのアクセス権を読み込む
 
 ```
-source ~/admin-openrc.sh
+# source ~/admin-openrc.sh
 ```
 
 
@@ -74,8 +74,8 @@ source ~/admin-openrc.sh
 ```
 # openstack user create --domain default --password-prompt nova
 ========>
-User Password:
-Repeat User Password:
+User Password:  Password123$  <== 入力中は表示されない
+Repeat User Password:  Password123$  <== 入力中は表示されない
 +-----------+----------------------------------+
 | Field     | Value                            |
 +-----------+----------------------------------+
