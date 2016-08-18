@@ -665,3 +665,163 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/neutron-l3-agen
 ## コンポーネントのインストール
 
 以下、コンピュートノードで実施
+
+- コンポーネントのインストール [対象: compute01]
+
+```
+# yum install -y openstack-neutron openstack-neutron-linuxbridge ebtables ipset
+========>
+Installed:
+  ipset.x86_64 0:6.19-4.el7     openstack-neutron.noarch 1:7.1.1-1.el7     openstack-neutron-linuxbridge.noarch 1:7.1.1-1.el7
+
+Dependency Installed:
+  conntrack-tools.x86_64 0:1.4.2-9.el7                           dibbler-client.x86_64 0:1.0.1-0.RC1.2.el7
+  dnsmasq-utils.x86_64 0:2.66-14.el7_1                           ipset-libs.x86_64 0:6.19-4.el7
+  keepalived.x86_64 0:1.2.13-7.el7                               libnetfilter_cthelper.x86_64 0:1.0.0-8.el7
+  libnetfilter_cttimeout.x86_64 0:1.0.0-6.el7                    libnetfilter_queue.x86_64 0:1.0.2-2.el7
+  lm_sensors-libs.x86_64 0:3.3.4-11.el7                          net-snmp-agent-libs.x86_64 1:5.7.2-24.el7_2.1
+  net-snmp-libs.x86_64 1:5.7.2-24.el7_2.1                        openstack-neutron-common.noarch 1:7.1.1-1.el7
+  python-logutils.noarch 0:0.3.3-3.el7                           python-neutron.noarch 1:7.1.1-1.el7
+  python-oslo-policy.noarch 0:0.11.0-1.el7                       python-ryu.noarch 0:3.30-1.el7
+  python-simplegeneric.noarch 0:0.8-7.el7                        python-webtest.noarch 0:1.3.4-6.el7
+  python2-pecan.noarch 0:1.0.2-2.el7                             python2-singledispatch.noarch 0:3.4.0.3-4.el7
+
+Complete!
+========<
+```
+
+
+## 共通コンポーネントの設定
+
+Networking の共通コンポーネントの設定は、認証メカニズム、メッセージキュー、プラグインがある
+
+- 共通コンポーネントの設定 [対象: compute01]
+  - 補足:
+    - コンピュートノードはデータベースに直接アクセスしないため、[database] セクションにおいて、すべての connection オプションをコメントアウト
+    - [DEFAULT] と [oslo_messaging_rabbit] セクションに、RabbitMQ メッセージキューのアクセス方法を設定
+    - [DEFAULT] セクションと [keystone_authtoken] セクションに、Identity サービスへのアクセス方法を設定
+    - [oslo_concurrency] セクションにロックパスを設定
+    - (オプション) トラブルシューティングしやすくするために、冗長ロギングを [DEFAULT] セクションで有効化
+
+```
+# vi /etc/neutron/neutron.conf
+========>
+# <[database] セクションにおいて、すべての connection オプションをコメントアウト>
+# <ただ、デフォルトでコメントアウト済み のため、特に作業は発生しない想定>
+
+
+[DEFAULT]
+rpc_backend = rabbit
+
+
+[oslo_messaging_rabbit]
+rabbit_host = controller01
+rabbit_userid = openstack
+rabbit_password = Password123$
+
+
+[DEFAULT]
+auth_strategy = keystone
+
+
+[keystone_authtoken]
+auth_uri = http://controller01:5000
+auth_url = http://controller01:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = neutron
+password = Passwordd123$
+
+
+[oslo_concurrency]
+lock_path = /var/lib/neutron/tmp
+
+# <オプション>
+# <本手順では追加しない>
+[DEFAULT]
+verbose = True
+========<
+```
+
+
+## Linux ブリッジエージェントの設定
+
+Linux ブリッジエージェントは、プライベートネットワーク向けの VXLAN トンネルなどの、インスタンス用の L2 (ブリッジおよびスイッチ) 仮想ネットワークインフラを構築して、セキュリティーグループを処理
+
+- Linux ブリッジエージェントの設定 [対象: compute01]
+  - 補足:
+    - [linux_bridge] セクションにおいて、仮想パブリックネットワークを物理パブリックネットワークのインターフェースに対応付け
+    - [vxlan] セクションにおいて、VXLAN オーバーレイネットワークを有効にし、オーバーレイネットワークを処理する物理ネットワークインターフェースの IP アドレスを設定し、layer-2 population を有効化
+    - [agent] セクションにおいて、ARP スプーフィングの保護を有効化
+    - [securitygroup] セクションで、セキュリティグループを有効にし、 Linux ブリッジ iptables ファイアウォールドライバーを設定
+    - PUBLIC_INTERFACE(老番のIPを振っていないインターフェース eno33559296)</br>
+    OVERLAY_INTERFACE(若番のIPを振っているインターフェース eno16780032)(本手順では管理インターフェースと兼用している)
+
+
+```
+# vi /etc/neutron/plugins/ml2/linuxbridge_agent.ini
+========>
+[linux_bridge]
+physical_interface_mappings = public:eno33559296
+
+
+[vxlan]
+enable_vxlan = True
+local_ip = 192.168.101.21
+l2_population = True
+
+
+[agent]
+prevent_arp_spoofing = True
+
+
+[securitygroup]
+enable_security_group = True
+firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+========<
+```
+
+
+## Networking を使用するための Compute の設定
+
+- Networking を使用するための Compute の設定 [対象: compute01]
+  - 補足:
+    - [neutron] セクションに、アクセスパラメーターを設定
+
+```
+# vi /etc/nova/nova.conf
+========>
+[neutron]
+url = http://controller01:9696
+auth_url = http://controller01:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+region_name = RegionOne
+project_name = service
+username = neutron
+password = Password123$
+========<
+```
+
+## サービス の再起動 と起動、自動起動
+
+- Compute Service の再起動 [対象: compute01]
+
+```
+# systemctl restart openstack-nova-compute.service
+```
+
+- Linux ブリッジエージェントを起動し、システム起動時に自動的に起動するよう設定 [対象: compute01]
+
+```
+# systemctl enable neutron-linuxbridge-agent.service
+========>
+Created symlink from /etc/systemd/system/multi-user.target.wants/neutron-linuxbridge-agent.service to /usr/lib/systemd/system/neutron-linuxbridge-agent.service.
+========<
+
+
+# systemctl start neutron-linuxbridge-agent.service
+```
