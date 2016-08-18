@@ -93,7 +93,9 @@ OpenStack on ESXi とするための、ESXi事前準備をする
   - vClientでESXiにログイン > 192.168.101.1 > 構成 > セキュリティプロファイル > サービス/プロパティ > ESXiシェル > オプション > 「開始」をクリック > 「ホストに連動して~」にチェック > OK
   - vClientでESXiにログイン > 192.168.101.1 > 構成 > セキュリティプロファイル > サービス/プロパティ > SSH > オプション > 「開始」をクリック > 「ホストに連動して~」にチェック > OK
 
-- 操作PCのTeratermでESXiにログインし、以下を実施
+- ESXiホスト`/etc/vmware/config`の編集
+
+  - 操作PCのTeratermでESXiにログインし、以下を実施
 
 ```
 # vi /etc/vmware/config
@@ -107,6 +109,7 @@ authd.fullpath = "/sbin/authd"
 vhv.enable = "TRUE"
 ========<
 ```
+
 
 - 以下を参考に`VM Network 101`と`VM Network 102`両ポートグループに、`プロミスキャス(無差別)モード 承諾`(OpenStack上のVMと通信をとれるようにするため)を設定
 

@@ -484,6 +484,7 @@ KVM 拡張を持つ QEMU ハイパーバイザーを使用
 ### パッケージのインストール (コンピュートノード)
 
 - インストール [対象: compute01]
+
 ```
 # yum install -y openstack-nova-compute sysfsutils
 ========>
@@ -579,23 +580,37 @@ verbose = True
 # <1以上の数を返すこと>
 # egrep -c '(vmx|svm)' /proc/cpuinfo
 ========>
-0
+4
 ========<
-
-ありゃ？？？？
-ESXiの設定を見直そう。。。。
-
-ESXiの/etc/vmware/configに「vhv.enable = “TRUE”」
-もしないといけないのかな？？？
-
-
 ```
 
+<!--
+[root@compute01 ~]# cat /proc/cpuinfo | grep vmx
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts mmx fxsr sse sse2 ss ht syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts nopl xtopology tsc_reliable nonstop_tsc aperfmperf pni vmx ssse3 cx16 sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer hypervisor lahf_lm ida dtherm tpr_shadow vnmi ept vpid tsc_adjust
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts mmx fxsr sse sse2 ss ht syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts nopl xtopology tsc_reliable nonstop_tsc aperfmperf pni vmx ssse3 cx16 sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer hypervisor lahf_lm ida dtherm tpr_shadow vnmi ept vpid tsc_adjust
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts mmx fxsr sse sse2 ss ht syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts nopl xtopology tsc_reliable nonstop_tsc aperfmperf pni vmx ssse3 cx16 sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer hypervisor lahf_lm ida dtherm tpr_shadow vnmi ept vpid tsc_adjust
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts mmx fxsr sse sse2 ss ht syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts nopl xtopology tsc_reliable nonstop_tsc aperfmperf pni vmx ssse3 cx16 sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer hypervisor lahf_lm ida dtherm tpr_shadow vnmi ept vpid tsc_adjust
+-->
 
-- (実施の必要なし)
+
+
+#### 上記コマンドで0を返した場合のみ以下を実施、*1以上の場合は実施しない*
+
+- [01_ESXi事前準備](https://github.com/Soichiro75/openstack-liberty-on-centos-japanese/tree/master/01_ESXi事前準備) と、[02_OSインストール](https://github.com/Soichiro75/openstack-liberty-on-centos-japanese/tree/master/02_OSインストール) の以下を実施
+
+  - ESXiホストのBIOSにて`Virtualization Technology(VT-x or AMD-V) を有効化`
+  - VM Network 101とVM Network 102両ポートグループに、`プロミスキャス(無差別)モード 承諾`(OpenStack上のVMと通信をとれるようにするため)を設定
+  - ESXiホストの `/etc/vmware/config` に `vhv.enable = "TRUE"` を記載
+  - compute01の`Intel VT-x/AMD-Vを命令セット仮想化に使用し、ソフトウェアをMMU仮想化に使用の有効`
+  - ESXiホスト、compute01 の`再起動` (勿論、controller01も同じく再起動となる)
+  - compute01 にて `egrep -c '(vmx|svm)' /proc/cpuinfo` が`1以上`を返すかリトライ
+  - それでも0だった場合は、以下を実施
 
 ```
-上記のコマンドが 0 を返す場合、お使いのコンピュートノードはハードウェア支援機能をサポートしていません。libvirt が KVM の代わりに QEMU を使用するように設定する必要があります。
+上記のコマンドが 0 を返す場合、コンピュートノードはハードウェア支援機能をサポートしていない。libvirt が KVM の代わりに QEMU を使用するように設定する必要がある。
+
+    (補足)：
+    libvirt とは、仮想化管理用の共通APIを提供する、レッドハットを中心としたオープンソースプロジェクト。仮想機械の制御を抽象化したライブラリ。 本ライブラリの特徴は、サポート範囲が広いことである。 サポートしている仮想化は、現在Xen、KVM、QEMU、LXC、OpenVZ、UML、VirtualBox、VMware ESX・GSX・Workstation・Player、Hyper-V、そしてクラスタ管理ソフトOpenNebulaである。
 
 /etc/nova/nova.conf ファイルの [libvirt] セクションを以下のように編集します。
 
@@ -607,7 +622,12 @@ virt_type = qemu
 
 ### Computeサービスの自動起動設定 と 起動
 
+- 自動起動設定 と 起動 [対象: compute01]
+
 ```
 # systemctl enable libvirtd.service openstack-nova-compute.service
+========>
+========<
+
 # systemctl start libvirtd.service openstack-nova-compute.service
 ```
