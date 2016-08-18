@@ -633,3 +633,187 @@ Created symlink from xxxxx
 
 # systemctl start libvirtd.service openstack-nova-compute.service
 ```
+
+
+## 動作確認
+
+以下、コントローラーノードで実施
+
+### 管理者専用 CLI コマンドへのアクセス権読み込み
+
+- admin クレデンシャルを読み込む
+
+```
+# source admin-openrc.sh
+```
+
+### プロセス確認
+
+- 各プロセスの起動と登録確認
+  - 補足:
+    - nova-consoleauth デーモン: コンソールプロキシーがユーザーに対して提供したトークンを認証する
+    - nova-cert デーモン: x509 証明書
+    - nova-conductor モジュール: nova-compute サービスとデータベース間のやりとりを仲介する
+    - nova-scheduler サービス: 仮想マシンインスタンスの作成要求を受け取ってキューイングし、インスタンスをどのコンピュートサーバーホストで実行するかを決定する
+    - nova-compute サービス: ハイパーバイザー API を使用して仮想マシンインスタンスの作成、終了を行うワーカーデーモン
+
+```
+# <以下5つのBinaryが`Status enabled`, `State up` であること>
+# nova service-list
+========>
++----+------------------+--------------+----------+---------+-------+----------------------------+-----------------+
+| Id | Binary           | Host         | Zone     | Status  | State | Updated_at                 | Disabled Reason |
++----+------------------+--------------+----------+---------+-------+----------------------------+-----------------+
+| 1  | nova-consoleauth | controller01 | internal | enabled | up    | 2016-08-18T01:39:18.000000 | -               |
+| 2  | nova-cert        | controller01 | internal | enabled | up    | 2016-08-18T01:39:18.000000 | -               |
+| 3  | nova-conductor   | controller01 | internal | enabled | up    | 2016-08-18T01:39:17.000000 | -               |
+| 4  | nova-scheduler   | controller01 | internal | enabled | up    | 2016-08-18T01:39:18.000000 | -               |
+| 5  | nova-compute     | compute01    | nova     | enabled | up    | 2016-08-18T01:39:16.000000 | -               |
++----+------------------+--------------+----------+---------+-------+----------------------------+-----------------+
+========<
+```
+
+
+### Identity サービスへの接続 確認
+
+- Identity サービスの API エンドポイントを一覧表示して、Identity サービスへの接続を確認
+  - WARNINGが表示されるが、この時点では無視して良い
+    - `export OS_REGION_NAME=RegionOne` すれば、WARNINGは表示されなくなる
+<!--
+けど、なぜか少ない、、、、、。
+[root@controller01 ~]# nova endpoints
++-----------+----------------------------------+
+| keystone  | Value                            |
++-----------+----------------------------------+
+| id        | 192449e045694288a80d6dd98037b3dc |
+| interface | internal                         |
+| region    | RegionOne                        |
+| region_id | RegionOne                        |
+| url       | http://controller01:5000/v2.0    |
++-----------+----------------------------------+
++-----------+----------------------------------+
+| glance    | Value                            |
++-----------+----------------------------------+
+| id        | 24ea67411d524130a35cc1d5c583383b |
+| interface | public                           |
+| region    | RegionOne                        |
+| region_id | RegionOne                        |
+| url       | http://controller01:9292         |
++-----------+----------------------------------+
++-----------+--------------------------------------------------------------+
+| nova      | Value                                                        |
++-----------+--------------------------------------------------------------+
+| id        | 4ac46d79c8a24b82b4403baf2e5158fe                             |
+| interface | admin                                                        |
+| region    | RegionOne                                                    |
+| region_id | RegionOne                                                    |
+| url       | http://controller01:8774/v2/82b03da1f7ed4c1a973f17d9794dd1cb |
++-----------+--------------------------------------------------------------+
+-->
+
+
+```
+# nova endpoints
+========>
+WARNING: keystone has no endpoint in ! Available endpoints for this service:
++-----------+----------------------------------+
+| keystone  | Value                            |
++-----------+----------------------------------+
+| id        | 192449e045694288a80d6dd98037b3dc |
+| interface | internal                         |
+| region    | RegionOne                        |
+| region_id | RegionOne                        |
+| url       | http://controller01:5000/v2.0    |
++-----------+----------------------------------+
++-----------+----------------------------------+
+| keystone  | Value                            |
++-----------+----------------------------------+
+| id        | 44ee326d2e2d473f8613e063f913ab38 |
+| interface | admin                            |
+| region    | RegionOne                        |
+| region_id | RegionOne                        |
+| url       | http://controller01:35357/v2.0   |
++-----------+----------------------------------+
++-----------+----------------------------------+
+| keystone  | Value                            |
++-----------+----------------------------------+
+| id        | ca4c49ed7b934ba489ad58540576e290 |
+| interface | public                           |
+| region    | RegionOne                        |
+| region_id | RegionOne                        |
+| url       | http://controller01:5000/v2.0    |
++-----------+----------------------------------+
+WARNING: glance has no endpoint in ! Available endpoints for this service:
++-----------+----------------------------------+
+| glance    | Value                            |
++-----------+----------------------------------+
+| id        | 24ea67411d524130a35cc1d5c583383b |
+| interface | public                           |
+| region    | RegionOne                        |
+| region_id | RegionOne                        |
+| url       | http://controller01:9292         |
++-----------+----------------------------------+
++-----------+----------------------------------+
+| glance    | Value                            |
++-----------+----------------------------------+
+| id        | c852c160ac484c47843b1e636b0878f5 |
+| interface | internal                         |
+| region    | RegionOne                        |
+| region_id | RegionOne                        |
+| url       | http://controller01:9292         |
++-----------+----------------------------------+
++-----------+----------------------------------+
+| glance    | Value                            |
++-----------+----------------------------------+
+| id        | e13401d6dd54477b9e9964812f2f3207 |
+| interface | admin                            |
+| region    | RegionOne                        |
+| region_id | RegionOne                        |
+| url       | http://controller01:9292         |
++-----------+----------------------------------+
+WARNING: nova has no endpoint in ! Available endpoints for this service:
++-----------+--------------------------------------------------------------+
+| nova      | Value                                                        |
++-----------+--------------------------------------------------------------+
+| id        | 4ac46d79c8a24b82b4403baf2e5158fe                             |
+| interface | admin                                                        |
+| region    | RegionOne                                                    |
+| region_id | RegionOne                                                    |
+| url       | http://controller01:8774/v2/82b03da1f7ed4c1a973f17d9794dd1cb |
++-----------+--------------------------------------------------------------+
++-----------+--------------------------------------------------------------+
+| nova      | Value                                                        |
++-----------+--------------------------------------------------------------+
+| id        | aea67c1cd26b48d780c5253fdf7c1bce                             |
+| interface | internal                                                     |
+| region    | RegionOne                                                    |
+| region_id | RegionOne                                                    |
+| url       | http://controller01:8774/v2/82b03da1f7ed4c1a973f17d9794dd1cb |
++-----------+--------------------------------------------------------------+
++-----------+--------------------------------------------------------------+
+| nova      | Value                                                        |
++-----------+--------------------------------------------------------------+
+| id        | cfc702302cc64738b73b8b52824fdb95                             |
+| interface | public                                                       |
+| region    | RegionOne                                                    |
+| region_id | RegionOne                                                    |
+| url       | http://controller01:8774/v2/82b03da1f7ed4c1a973f17d9794dd1cb |
++-----------+--------------------------------------------------------------+
+========<
+```
+
+
+### Image service への接続 確認
+
+- イメージサービスカタログにあるイメージを一覧表示して、Image service への接続を確認
+
+```
+# nova image-list
+========>
++--------------------------------------+--------+--------+--------+
+| ID                                   | Name   | Status | Server |
++--------------------------------------+--------+--------+--------+
+| da47a8b1-4fc7-44cc-b27c-d41ff5d88d7c | cirros | ACTIVE |        |
++--------------------------------------+--------+--------+--------+
+========<
+```
