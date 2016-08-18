@@ -825,3 +825,81 @@ Created symlink from /etc/systemd/system/multi-user.target.wants/neutron-linuxbr
 
 # systemctl start neutron-linuxbridge-agent.service
 ```
+
+
+</br>
+</br>
+</br>
+</br>
+</br>
+
+***
+
+## 動作確認
+
+以下、コントローラーノードで実施
+
+- 管理者専用 CLI コマンドへのアクセス権読み込み [対象: controller01]
+
+admin クレデンシャルを読み込む
+
+```
+# source admin-openrc.sh
+```
+
+
+- プロセスの起動確認 [対象: controller01]
+
+ロード済み拡張機能一覧を表示して、neutron-server プロセスが正しく起動していることを確認する
+
+```
+# neutron ext-list
+========>
++-----------------------+-----------------------------------------------+
+| alias                 | name                                          |
++-----------------------+-----------------------------------------------+
+| dns-integration       | DNS Integration                               |
+| ext-gw-mode           | Neutron L3 Configurable external gateway mode |
+| binding               | Port Binding                                  |
+| agent                 | agent                                         |
+| subnet_allocation     | Subnet Allocation                             |
+| l3_agent_scheduler    | L3 Agent Scheduler                            |
+| external-net          | Neutron external network                      |
+| flavors               | Neutron Service Flavors                       |
+| net-mtu               | Network MTU                                   |
+| quotas                | Quota management support                      |
+| l3-ha                 | HA Router extension                           |
+| provider              | Provider Network                              |
+| multi-provider        | Multi Provider Network                        |
+| extraroute            | Neutron Extra Route                           |
+| router                | Neutron L3 Router                             |
+| extra_dhcp_opt        | Neutron Extra DHCP opts                       |
+| security-group        | security-group                                |
+| dhcp_agent_scheduler  | DHCP Agent Scheduler                          |
+| rbac-policies         | RBAC Policies                                 |
+| port-security         | Port Security                                 |
+| allowed-address-pairs | Allowed Address Pairs                         |
+| dvr                   | Distributed Virtual Router                    |
++-----------------------+-----------------------------------------------+
+========<
+```
+
+
+
+- (セルフサービスネットワーク) neutron エージェントの起動確認 [対象: controller01]
+
+neutron エージェントが正常に起動したことを確認するために、エージェントを一覧表示します。
+
+```
+# neutron agent-list
+========>
++--------------------------------------+--------------------+--------------+-------+----------------+---------------------------+
+| id                                   | agent_type         | host         | alive | admin_state_up | binary                    |
++--------------------------------------+--------------------+--------------+-------+----------------+---------------------------+
+| 50538e6a-aa7e-4acb-8987-c21e8b2582e9 | Metadata agent     | controller01 | :-)   | True           | neutron-metadata-agent    |
+| 66fd76e9-88b1-453f-8f34-481ca2e860ca | L3 agent           | controller01 | :-)   | True           | neutron-l3-agent          |
+| ad3e42bc-b27a-4cc8-8fa7-d62874116263 | Linux bridge agent | compute01    | :-)   | True           | neutron-linuxbridge-agent |
+| b9e4134c-b7e7-40e4-b683-3964e21c1947 | DHCP agent         | controller01 | :-)   | True           | neutron-dhcp-agent        |
+| d751c405-17c0-4048-851b-61bd6dad2181 | Linux bridge agent | controller01 | :-)   | True           | neutron-linuxbridge-agent |
++--------------------------------------+--------------------+--------------+-------+----------------+---------------------------+
+========<
